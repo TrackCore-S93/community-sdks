@@ -1,0 +1,8 @@
+.dart_tool/
+.packages
+pubspec.lock
+build/
+.DS_Store
+
+# The mock app for trying the SDK by hand. Kept on this machine only.
+example/
