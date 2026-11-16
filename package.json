@@ -1,0 +1,38 @@
+{
+  "name": "@trackcore/community-react-native",
+  "version": "0.1.0",
+  "description": "The Community client for React Native and Expo. Built on the JavaScript SDK; no native code of its own.",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "react-native": "./dist/cjs/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": { "types": "./dist/esm/index.d.ts", "default": "./dist/esm/index.js" },
+      "require": { "types": "./dist/cjs/index.d.ts", "default": "./dist/cjs/index.js" }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "test:live": "npm run build && node --test test/live/live.test.mjs",
+    "pack:release": "npm test && npm pack"
+  },
+  "peerDependencies": {
+    "@trackcore/community-sdk": ">=0.1.0 <0.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@trackcore/community-sdk": { "optional": true }
+  },
+  "devDependencies": {
+    "@trackcore/community-sdk": "file:../community-sdk-js/trackcore-community-sdk-0.1.0.tgz",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}
