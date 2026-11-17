@@ -602,6 +602,8 @@ export interface Settings {
   bio_max_length: number;
   /** Members may open each other's profiles. */
   profile_viewing_enabled: boolean;
+  /** Notifications are also sent to members' phones. */
+  push_enabled: boolean;
   /** The largest image upload, in bytes. Fixed, not a creator setting. */
   max_image_upload_bytes: number;
   /** False when this deployment has no image storage. */
@@ -640,7 +642,63 @@ export interface UpdateSettingsRequest {
   bio_max_length?: number | null;
   /** Whether members may open each other's profiles. */
   profile_viewing_enabled?: boolean | null;
+  /** Whether notifications are also sent to members' phones. */
+  push_enabled?: boolean | null;
 }
+
+/** A phone's push token. */
+export interface RegisterPushDeviceRequest {
+  /** The push token the phone gave the app: an Expo push token or a Firebase Cloud Messaging token. */
+  token: string;
+  /** `expo` or `fcm`. Left out, it is worked out from the token. */
+  provider?: PushProvider;
+  /** `ios`, `android` or `web`. Optional. */
+  platform?: PushPlatform;
+}
+
+/** A registered phone. */
+export interface PushDevice {
+  /** The service the token belongs to. */
+  provider: PushProvider;
+  /** What the app said it runs on; null when it did not say. */
+  platform: PushPlatform | null;
+  /** Always true. */
+  registered: boolean;
+}
+
+/** The push token to forget. */
+export interface UnregisterPushDeviceRequest {
+  /** The token that was registered. */
+  token: string;
+}
+
+/** The result of forgetting a phone. */
+export interface PushUnregistered {
+  /** False when the token was not registered for this user. */
+  removed: boolean;
+}
+
+/** The user's push switch. */
+export interface PushPreference {
+  /** The user's own choice. */
+  enabled: boolean;
+  /** The creator's switch. Push arrives only when both are on. */
+  community_enabled: boolean;
+  /** How many phones the user has registered. */
+  devices: number;
+}
+
+/** The user's choice. */
+export interface SetPushPreferenceRequest {
+  /** True for on, false for off. */
+  enabled: boolean;
+}
+
+/** The push service a token belongs to. */
+export type PushProvider = "expo" | "fcm";
+
+/** What the app runs on. */
+export type PushPlatform = "ios" | "android" | "web";
 
 /** One message on the live connection. */
 export interface LiveEvent {

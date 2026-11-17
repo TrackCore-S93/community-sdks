@@ -2,7 +2,7 @@ import { ConfigurationError } from "./errors.js";
 import type { CallOptions, CommunityOptions } from "./options.js";
 import { Transport } from "./transport.js";
 import {
-  AuthAPI, BlocksAPI, CommentsAPI, CommunityAPI, MembersAPI, NotificationsAPI, PostsAPI, ReportsAPI, SettingsAPI,
+  AuthAPI, BlocksAPI, CommentsAPI, CommunityAPI, MembersAPI, NotificationsAPI, PostsAPI, PushAPI, ReportsAPI, SettingsAPI,
   TopicsAPI, UsersAPI,
 } from "./api.js";
 import { LiveAPI } from "./live.js";
@@ -56,9 +56,19 @@ export class Community {
     return this.#ready.transport.initialize(externalId, options.signal);
   }
 
-  /** Signs the user out: ends the session where there is one, and forgets the user. */
-  signOut(options: CallOptions = {}): Promise<void> {
-    return this.#ready.transport.signOut(options.signal);
+  /** Signs the user out: unregisters the phone from push, ends the session where there is one, and forgets the user. */
+  async signOut(options: CallOptions = {}): Promise<void> {
+    const { transport, apis } = this.#ready;
+    // A phone registered for push must stop getting this user's
+    // notifications. A failure here must not keep the user signed in.
+    if (apis.push.registeredToken) {
+      try {
+        await apis.push.unregister(undefined, options);
+      } catch {
+        /* the server forgets the token when the next user registers it */
+      }
+    }
+    return transport.signOut(options.signal);
   }
 
   /** Names the user every later request acts for. For a server; no network call. */
@@ -145,6 +155,8 @@ export class Community {
   get reports(): ReportsAPI { return this.#ready.apis.reports; }
   /** Notifications. */
   get notifications(): NotificationsAPI { return this.#ready.apis.notifications; }
+  /** Push notifications to the phone. */
+  get push(): PushAPI { return this.#ready.apis.push; }
   /** The creator's settings. */
   get settings(): SettingsAPI { return this.#ready.apis.settings; }
   /** Live updates. */
@@ -172,6 +184,7 @@ function buildAPIs(transport: Transport, options: CommunityOptions) {
     blocks: new BlocksAPI(transport),
     reports: new ReportsAPI(transport),
     notifications: new NotificationsAPI(transport),
+    push: new PushAPI(transport),
     settings: new SettingsAPI(transport),
     live: new LiveAPI(transport, options.webSocket),
   };

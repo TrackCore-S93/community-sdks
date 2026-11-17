@@ -278,7 +278,7 @@ test("requests are shaped as the API expects", async () => {
 test("the SDK has a call for every route in the contract", () => {
   const { fetch } = fakeFetch([]);
   const c = new Community({ apiKey: SECRET, baseUrl: base, fetch, runtime: "server" });
-  assert.equal(OPERATIONS.length, 48);
+  assert.equal(OPERATIONS.length, 52);
   for (const op of OPERATIONS) {
     const [namespace, method] = op.sdk.split(".");
     const owner = namespace === "client" ? c : c[namespace];
@@ -346,4 +346,50 @@ test("upload asks for a link, sends the file, and finishes", async () => {
   c2.setUser("ali");
   await assert.rejects(c2.media.upload(new Uint8Array([1, 2, 3])), ValidationError);
   assert.equal(big.calls.length, 1, "a file over the limit was sent");
+});
+
+test("push: a phone is registered, and signing out unregisters it", async () => {
+  const expoToken = "ExponentPushToken[abc]";
+  const f = fakeFetch([
+    session(),
+    json(200, { provider: "expo", platform: "ios", registered: true }),
+    json(200, { enabled: true, community_enabled: true, devices: 1 }),
+    json(200, { enabled: false, community_enabled: true, devices: 1 }),
+    json(200, { removed: true }),
+    json(200, {}),
+  ]);
+  const c = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch: f.fetch });
+  await c.initialize("ali");
+  await assert.rejects(c.push.register({ token: "" }), ValidationError);
+  const device = await c.push.register({ token: expoToken, platform: "ios" });
+  assert.equal(device.provider, "expo");
+  assert.equal(c.push.registeredToken, expoToken);
+  assert.deepEqual(f.calls[1].body, { token: expoToken, platform: "ios" });
+  assert.equal(f.calls[1].method + " " + f.calls[1].url, `PUT ${base}/v1/push/devices`);
+  assert.equal((await c.push.preference()).devices, 1);
+  assert.equal((await c.push.setEnabled(false)).enabled, false);
+  assert.deepEqual(f.calls[3].body, { enabled: false });
+  // Signing out forgets the phone first, while the session still works.
+  await c.signOut();
+  assert.equal(f.calls[4].method + " " + f.calls[4].url, `POST ${base}/v1/push/devices/unregister`);
+  assert.deepEqual(f.calls[4].body, { token: expoToken });
+  assert.equal(f.calls[4].headers["X-Community-Session"], TOKEN);
+  assert.equal(f.calls[5].method + " " + f.calls[5].url, `DELETE ${base}/v1/auth/session`);
+  assert.equal(c.push.registeredToken, null);
+});
+
+test("push: a failed unregister does not stop sign-out, and nothing is sent with no phone", async () => {
+  let f = fakeFetch([session(), json(200, { provider: "fcm", platform: null, registered: true }), failure(500, "internal_error"), json(200, {})]);
+  let c = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch: f.fetch, retry: false });
+  await c.initialize("ali");
+  await c.push.register({ token: "fcm-token" });
+  await c.signOut();
+  assert.equal(c.sessionToken, null);
+  assert.equal(f.calls.at(-1).method, "DELETE");
+  f = fakeFetch([session(), json(200, {})]);
+  c = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch: f.fetch });
+  await c.initialize("ali");
+  assert.equal(await c.push.unregister(), false);
+  await c.signOut();
+  assert.equal(f.calls.length, 2);
 });

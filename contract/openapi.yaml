@@ -92,6 +92,8 @@ tags:
     description: "Reporting posts and comments."
   - name: Notifications
     description: "What others did to what a member wrote."
+  - name: Push
+    description: "Notifications sent to the phone while the app is closed."
   - name: Settings
     description: "What the creator controls."
   - name: Live
@@ -2617,6 +2619,305 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/push/devices:
+    put:
+      operationId: registerPushDevice
+      tags: [Push]
+      summary: "Register a phone for push notifications"
+      description: "Stores the phone's push token for the user. The token is an Expo push token or a Firebase Cloud Messaging token; the kind is worked out from its form unless `provider` says. Registering the same token again changes nothing. A token registered by another user of the same community moves to this one.\n\nFrom then on each notification is also sent to the phone, with `data` for opening the right screen: `type` (`community.notification`), `notification_id`, `kind`, `post_id` and, when there is a comment, `comment_id` and `parent_comment_id`.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      x-community-auth: member
+      x-community-sdk: push.register
+      parameters:
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterPushDeviceRequest'
+      responses:
+        "200":
+          description: "The phone is registered."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PushDevice'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`."
+          x-community-codes: [user_scope_violation]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "413":
+          description: "One of: `payload_too_large`."
+          x-community-codes: [payload_too_large]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "422":
+          description: "One of: `validation_failed`."
+          x-community-codes: [validation_failed]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/push/devices/unregister:
+    post:
+      operationId: unregisterPushDevice
+      tags: [Push]
+      summary: "Forget a phone"
+      description: "Removes the user's push token: send it when the user signs out. Removing a token that is not registered is not an error.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      x-community-auth: member
+      x-community-sdk: push.unregister
+      parameters:
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnregisterPushDeviceRequest'
+      responses:
+        "200":
+          description: "Whether a token was removed."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PushUnregistered'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`."
+          x-community-codes: [user_scope_violation]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "413":
+          description: "One of: `payload_too_large`."
+          x-community-codes: [payload_too_large]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "422":
+          description: "One of: `validation_failed`."
+          x-community-codes: [validation_failed]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/push/preferences:
+    get:
+      operationId: getPushPreference
+      tags: [Push]
+      summary: "The user's push switch"
+      description: "Whether the user wants push notifications, whether the creator allows them, and how many phones are registered. Push arrives only when both switches are on.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      x-community-auth: member
+      x-community-sdk: push.preference
+      parameters:
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      responses:
+        "200":
+          description: "The switch."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PushPreference'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`."
+          x-community-codes: [user_scope_violation]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    put:
+      operationId: setPushPreference
+      tags: [Push]
+      summary: "Turn the user's push notifications on or off"
+      description: "Off stops messages to the user's phones; notifications still appear in the list. Something missed while off is not sent later.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      x-community-auth: member
+      x-community-sdk: push.setEnabled
+      parameters:
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetPushPreferenceRequest'
+      responses:
+        "200":
+          description: "The switch as it is now."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PushPreference'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`, `community_join_required`."
+          x-community-codes: [user_scope_violation, community_join_required]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "413":
+          description: "One of: `payload_too_large`."
+          x-community-codes: [payload_too_large]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "422":
+          description: "One of: `validation_failed`."
+          x-community-codes: [validation_failed]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /v1/blocks:
     get:
       operationId: listBlocks
@@ -4697,7 +4998,7 @@ components:
       type: object
       description: "What the creator has chosen for the community."
       x-go-type: httpx.settingsBody
-      required: [max_images_per_post, image_size, image_max_dimension, reaction_order, comment_replies_enabled, feed_mode, feed_page_size, report_threshold, search_page_size, bio_max_length, profile_viewing_enabled, max_image_upload_bytes, image_uploads_enabled]
+      required: [max_images_per_post, image_size, image_max_dimension, reaction_order, comment_replies_enabled, feed_mode, feed_page_size, report_threshold, search_page_size, bio_max_length, profile_viewing_enabled, push_enabled, max_image_upload_bytes, image_uploads_enabled]
       properties:
         max_images_per_post:
           type: integer
@@ -4742,6 +5043,10 @@ components:
         profile_viewing_enabled:
           type: boolean
           description: "Members may open each other's profiles."
+          example: true
+        push_enabled:
+          type: boolean
+          description: "Notifications are also sent to members' phones."
           example: true
         max_image_upload_bytes:
           type: integer
@@ -4817,6 +5122,103 @@ components:
           type: [boolean, 'null']
           description: "Whether members may open each other's profiles."
           example: true
+        push_enabled:
+          type: [boolean, 'null']
+          description: "Whether notifications are also sent to members' phones."
+          example: true
+    RegisterPushDeviceRequest:
+      type: object
+      description: "A phone's push token."
+      x-go-type: httpx.registerDeviceRequest
+      required: [token]
+      properties:
+        token:
+          type: string
+          description: "The push token the phone gave the app: an Expo push token or a Firebase Cloud Messaging token."
+          example: "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]"
+        provider:
+          description: "`expo` or `fcm`. Left out, it is worked out from the token."
+          allOf:
+            - $ref: '#/components/schemas/PushProvider'
+        platform:
+          description: "`ios`, `android` or `web`. Optional."
+          allOf:
+            - $ref: '#/components/schemas/PushPlatform'
+    PushDevice:
+      type: object
+      description: "A registered phone."
+      x-go-type: httpx.pushDeviceBody
+      required: [provider, platform, registered]
+      properties:
+        provider:
+          description: "The service the token belongs to."
+          allOf:
+            - $ref: '#/components/schemas/PushProvider'
+        platform:
+          anyOf:
+            - $ref: '#/components/schemas/PushPlatform'
+            - type: 'null'
+          description: "What the app said it runs on; null when it did not say."
+        registered:
+          type: boolean
+          description: "Always true."
+          example: true
+    UnregisterPushDeviceRequest:
+      type: object
+      description: "The push token to forget."
+      x-go-type: httpx.unregisterDeviceRequest
+      required: [token]
+      properties:
+        token:
+          type: string
+          description: "The token that was registered."
+          example: "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]"
+    PushUnregistered:
+      type: object
+      description: "The result of forgetting a phone."
+      x-go-type: httpx.pushUnregisteredBody
+      required: [removed]
+      properties:
+        removed:
+          type: boolean
+          description: "False when the token was not registered for this user."
+          example: true
+    PushPreference:
+      type: object
+      description: "The user's push switch."
+      x-go-type: httpx.pushPreferenceBody
+      required: [enabled, community_enabled, devices]
+      properties:
+        enabled:
+          type: boolean
+          description: "The user's own choice."
+          example: true
+        community_enabled:
+          type: boolean
+          description: "The creator's switch. Push arrives only when both are on."
+          example: true
+        devices:
+          type: integer
+          description: "How many phones the user has registered."
+          example: 1
+    SetPushPreferenceRequest:
+      type: object
+      description: "The user's choice."
+      x-go-type: httpx.setPushPreferenceRequest
+      required: [enabled]
+      properties:
+        enabled:
+          type: boolean
+          description: "True for on, false for off."
+          example: false
+    PushProvider:
+      type: string
+      description: "The push service a token belongs to."
+      enum: ["expo", "fcm"]
+    PushPlatform:
+      type: string
+      description: "What the app runs on."
+      enum: ["ios", "android", "web"]
     LiveEvent:
       type: object
       description: "One message on the live connection."

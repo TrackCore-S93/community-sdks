@@ -64,6 +64,7 @@ network call.
 | `blocks` | `list`, `block`, `unblock` |
 | `reports` | `reportPost`, `reportComment`, and for the creator `list` |
 | `notifications` | `list`, `unreadCount`, `markRead`, `markAllRead` |
+| `push` | `register`, `unregister`, `preference`, `setEnabled` |
 | `settings` | `get`, and for the creator `update` |
 | `members` | for the creator: `list`, `setRole` |
 | `auth` | `createSession`, `endSession` |

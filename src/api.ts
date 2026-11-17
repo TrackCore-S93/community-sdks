@@ -360,6 +360,74 @@ export class NotificationsAPI extends Namespace {
   }
 }
 
+/** What to register a phone with. */
+export interface RegisterPushParams extends CallOptions {
+  /** The push token the phone gave the app: an Expo push token or a Firebase Cloud Messaging token. */
+  token: string;
+  /** `expo` or `fcm`. Left out, it is worked out from the token. */
+  provider?: T.PushProvider;
+  /** `ios`, `android` or `web`. */
+  platform?: T.PushPlatform;
+}
+
+/**
+ * Push notifications: the same notifications, sent to the phone while the app
+ * is closed. Get a push token from the phone (Expo's or Firebase's library),
+ * then register it for the signed-in user.
+ */
+export class PushAPI extends Namespace {
+  #token: string | null = null;
+
+  /** The token this client registered and has not unregistered, or null. */
+  get registeredToken(): string | null {
+    return this.#token;
+  }
+
+  /**
+   * Registers the phone's push token for the user. Safe to call on every
+   * start: registering the same token again changes nothing. `signOut`
+   * unregisters it.
+   */
+  async register(params: RegisterPushParams): Promise<T.PushDevice> {
+    required("token", params.token);
+    const device = await this.transport.request<T.PushDevice>({
+      method: "PUT", path: "/v1/push/devices", audience: "member", repeatable: true, signal: params.signal,
+      body: { token: params.token, provider: params.provider, platform: params.platform },
+    });
+    this.#token = params.token;
+    return device;
+  }
+
+  /**
+   * Forgets a push token, so the phone stops getting this user's
+   * notifications. Without a token it forgets the one this client registered.
+   * Resolves to whether a token was removed.
+   */
+  async unregister(token?: string, options: CallOptions = {}): Promise<boolean> {
+    const target = token ?? this.#token;
+    if (!target) return false;
+    const reply = await this.transport.request<T.PushUnregistered>({
+      method: "POST", path: "/v1/push/devices/unregister", audience: "member", repeatable: true,
+      signal: options.signal, body: { token: target },
+    });
+    if (target === this.#token) this.#token = null;
+    return reply.removed;
+  }
+
+  /** The user's push switch, the creator's, and how many phones are registered. */
+  preference(options: CallOptions = {}): Promise<T.PushPreference> {
+    return this.transport.request({ method: "GET", path: "/v1/push/preferences", audience: "member", signal: options.signal });
+  }
+
+  /** Turns the user's push notifications on or off. The notification list is not affected. */
+  setEnabled(enabled: boolean, options: CallOptions = {}): Promise<T.PushPreference> {
+    return this.transport.request({
+      method: "PUT", path: "/v1/push/preferences", audience: "member", repeatable: true,
+      signal: options.signal, body: { enabled },
+    });
+  }
+}
+
 /** What the creator can change. */
 export interface UpdateSettingsParams extends CallOptions {
   maxImagesPerPost?: number;
@@ -372,6 +440,8 @@ export interface UpdateSettingsParams extends CallOptions {
   searchPageSize?: number;
   bioMaxLength?: number;
   profileViewingEnabled?: boolean;
+  /** Whether notifications are also sent to members' phones. */
+  pushEnabled?: boolean;
 }
 
 /** The creator's settings. */
@@ -393,6 +463,7 @@ export class SettingsAPI extends Namespace {
         feed_mode: changes.feedMode, feed_page_size: changes.feedPageSize, report_threshold: changes.reportThreshold,
         search_page_size: changes.searchPageSize, bio_max_length: changes.bioMaxLength,
         profile_viewing_enabled: changes.profileViewingEnabled,
+        push_enabled: changes.pushEnabled,
       },
     });
   }
