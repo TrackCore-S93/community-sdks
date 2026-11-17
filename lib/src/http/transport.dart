@@ -12,7 +12,7 @@ import '../generated/models.dart';
 import 'http_adapter.dart';
 import 'retry_policy.dart';
 
-const String communityDefaultBaseUrl = 'https://community.trackcore.app';
+const String communityDefaultBaseUrl = 'https://api.community.trackcore.app';
 const String communitySessionHeader = 'X-Community-Session';
 const String communityExternalIdHeader = 'X-External-Id';
 const String communityIdempotencyHeader = 'Idempotency-Key';

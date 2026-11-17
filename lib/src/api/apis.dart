@@ -434,6 +434,29 @@ final class ReportsApi {
           audience: Audience.creator)));
 }
 
+/// The moderation archive: posts and comments that reached the report
+/// threshold. They are not deleted. Members no longer see them, and they are
+/// kept here. Secret key only.
+final class ArchiveApi {
+  ArchiveApi(this._transport);
+  final Transport _transport;
+
+  /// One page of the archive, newest first.
+  Future<ArchiveList> list({int? limit, String? before}) async =>
+      ArchiveList.fromJson(_object(await _transport.request(
+          'GET', '/v1/moderation/archive',
+          audience: Audience.creator,
+          query: {'limit': limit, 'before': before})));
+
+  /// One archived post or comment, by its archive id.
+  Future<Archived> get(String archiveId) async {
+    _required('archiveId', archiveId);
+    return Archived.fromJson(_object(await _transport.request(
+        'GET', '/v1/moderation/archive/${_enc(archiveId)}',
+        audience: Audience.creator)));
+  }
+}
+
 /// Notifications: what others did to what the user wrote.
 final class NotificationsApi {
   NotificationsApi(this._transport);

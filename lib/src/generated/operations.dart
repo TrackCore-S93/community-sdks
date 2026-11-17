@@ -252,6 +252,18 @@ const List<OperationSpec> operations = [
   ),
   (sdk: 'reports.list', method: 'GET', path: '/v1/reports', auth: 'creator'),
   (
+    sdk: 'archive.list',
+    method: 'GET',
+    path: '/v1/moderation/archive',
+    auth: 'creator'
+  ),
+  (
+    sdk: 'archive.get',
+    method: 'GET',
+    path: '/v1/moderation/archive/{archive_id}',
+    auth: 'creator'
+  ),
+  (
     sdk: 'notifications.list',
     method: 'GET',
     path: '/v1/notifications',

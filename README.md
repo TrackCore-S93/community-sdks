@@ -56,6 +56,7 @@ Dart 3.4 or later.
 | `media` | `upload`, `start`, `complete`, `get` |
 | `blocks` | `list`, `block`, `unblock` |
 | `reports` | `reportPost`, `reportComment`, `list` |
+| `archive` | `list`, `get`: posts and comments removed by reports, kept and not deleted |
 | `notifications` | `list`, `unreadCount`, `markRead`, `markAllRead` |
 | `push` | `register`, `unregister`, `preference`, `setEnabled` |
 | `settings` | `get`, `update` |
@@ -66,7 +67,7 @@ Dart 3.4 or later.
 | | `initialize`, `signOut`, `setSession`, `clearSession`, `whoAmI`, `currentUser`, `describeCredential` |
 
 The creator's calls (`topics.create`, `settings.update`, `posts.pin`,
-`members.*`, `reports.list`, `users.delete`) need a secret key. With a
+`members.*`, `reports.list`, `archive.*`, `users.delete`) need a secret key. With a
 publishable key they throw `CommunityConfigurationException`
 (`secretKeyRequired`) before anything is sent.
 
@@ -86,7 +87,7 @@ publishable key they throw `CommunityConfigurationException`
 | Option | Default | Meaning |
 |---|---|---|
 | `apiKey` | required | `cm_pk_…` in an app |
-| `baseUrl` | `https://community.trackcore.app` | Where the API answers |
+| `baseUrl` | `https://api.community.trackcore.app` | Where the API answers |
 | `sessionTtlSeconds` | 86400 | How long a session minted by `initialize` lives, 60 to 86400 |
 | `timeout` | 10 s | One attempt |
 | `retryPolicy` | `CommunityRetryPolicy()` | Attempts, backoff and the deadline for the whole call |

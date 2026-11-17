@@ -1049,7 +1049,7 @@ final class Reported {
   /// True when this member had reported it before.
   final bool alreadyReported;
 
-  /// True when this report reached the creator's threshold and the item was deleted.
+  /// True when this report reached the creator's threshold and the item was removed from the community.
   final bool removed;
 }
 
@@ -1151,8 +1151,156 @@ final class ReportList {
   /// Newest first.
   final List<Report> reports;
 
-  /// The number of reports at which an item is deleted.
+  /// The number of reports at which an item is removed from the community.
   final int reportThreshold;
+}
+
+/// A post or comment that was removed from the community by reports and kept.
+final class Archived {
+  /// Builds a [Archived]. Normally it comes from the API.
+  const Archived({
+    required this.id,
+    required this.kind,
+    required this.targetId,
+    required this.postId,
+    this.parentCommentId,
+    required this.topicId,
+    required this.body,
+    required this.images,
+    required this.author,
+    required this.reason,
+    required this.reports,
+    required this.threshold,
+    required this.reportedBy,
+    required this.createdAt,
+    required this.archivedAt,
+  });
+
+  /// Reads a [Archived] from the API's JSON.
+  factory Archived.fromJson(Map<String, Object?> json) => Archived(
+        id: json['id'] as String,
+        kind: json['kind'] as String,
+        targetId: json['target_id'] as String,
+        postId: json['post_id'] as String,
+        parentCommentId: json['parent_comment_id'] as String?,
+        topicId: json['topic_id'] as String,
+        body: json['body'] as String,
+        images: (json['images'] as List)
+            .map((e) =>
+                CommunityImage.fromJson((e as Map).cast<String, Object?>()))
+            .toList(growable: false),
+        author: ReportParty.fromJson(
+            (json['author'] as Map).cast<String, Object?>()),
+        reason: json['reason'] as String,
+        reports: (json['reports'] as num).toInt(),
+        threshold: (json['threshold'] as num).toInt(),
+        reportedBy: (json['reported_by'] as List)
+            .map((e) =>
+                ArchivedReporter.fromJson((e as Map).cast<String, Object?>()))
+            .toList(growable: false),
+        createdAt: DateTime.parse(json['created_at'] as String),
+        archivedAt: DateTime.parse(json['archived_at'] as String),
+      );
+
+  /// The archived item's id.
+  final String id;
+
+  /// `post` or `comment`.
+  final String kind;
+
+  /// The post or comment that was archived.
+  final String targetId;
+
+  /// The post itself, or the post the comment is under.
+  final String postId;
+
+  /// Set when the comment is a reply: the comment it sits under.
+  final String? parentCommentId;
+
+  /// The topic it was written in.
+  final String topicId;
+
+  /// Its whole text.
+  final String body;
+
+  /// Its pictures.
+  final List<CommunityImage> images;
+
+  /// Who wrote it.
+  final ReportParty author;
+
+  /// Why it was archived. `reports`: it reached the report threshold.
+  final String reason;
+
+  /// How many different members had reported it when it was archived.
+  final int reports;
+
+  /// The report threshold at that moment.
+  final int threshold;
+
+  /// The members who reported it, oldest first. A reporter who has since been erased is not listed.
+  final List<ArchivedReporter> reportedBy;
+
+  /// When it was written.
+  final DateTime createdAt;
+
+  /// When it was archived.
+  final DateTime archivedAt;
+}
+
+/// A member who reported an archived item.
+final class ArchivedReporter {
+  /// Builds a [ArchivedReporter]. Normally it comes from the API.
+  const ArchivedReporter({
+    required this.externalId,
+    required this.username,
+    required this.reason,
+    required this.createdAt,
+  });
+
+  /// Reads a [ArchivedReporter] from the API's JSON.
+  factory ArchivedReporter.fromJson(Map<String, Object?> json) =>
+      ArchivedReporter(
+        externalId: json['external_id'] as String,
+        username: json['username'] as String,
+        reason: json['reason'] as String,
+        createdAt: DateTime.parse(json['created_at'] as String),
+      );
+
+  /// Your own id for the user.
+  final String externalId;
+
+  /// The name the member chose in the community.
+  final String username;
+
+  /// The reason they gave.
+  final String reason;
+
+  /// When they reported it.
+  final DateTime createdAt;
+}
+
+/// One page of the moderation archive.
+final class ArchiveList {
+  /// Builds a [ArchiveList]. Normally it comes from the API.
+  const ArchiveList({
+    required this.archived,
+    this.nextCursor,
+  });
+
+  /// Reads a [ArchiveList] from the API's JSON.
+  factory ArchiveList.fromJson(Map<String, Object?> json) => ArchiveList(
+        archived: (json['archived'] as List)
+            .map((e) => Archived.fromJson((e as Map).cast<String, Object?>()))
+            .toList(growable: false),
+        nextCursor: json['next_cursor'] as String?,
+      );
+
+  /// Newest first.
+  final List<Archived> archived;
+
+  /// Pass as `before` for the next page. Null at the end.
+  final String? nextCursor;
 }
 
 /// One member being told what another did to what they wrote.
@@ -1388,7 +1536,7 @@ final class Settings {
   /// Posts per load or page, 1 to 40.
   final int feedPageSize;
 
-  /// Reports that delete a post or comment, 1 or more.
+  /// Reports that remove a post or comment from the community, 1 or more.
   final int reportThreshold;
 
   /// Search results per page, 1 to 40.
@@ -1413,7 +1561,7 @@ final class Settings {
   final RemovedByThreshold? removedByThreshold;
 }
 
-/// What a new report threshold deleted at once.
+/// What a new report threshold removed at once.
 final class RemovedByThreshold {
   /// Builds a [RemovedByThreshold]. Normally it comes from the API.
   const RemovedByThreshold({

@@ -28,6 +28,7 @@ final class CommunityClient {
         media = MediaApi(_transport),
         blocks = BlocksApi(_transport),
         reports = ReportsApi(_transport),
+        archive = ArchiveApi(_transport),
         notifications = NotificationsApi(_transport),
         push = PushApi(_transport),
         settings = SettingsApi(_transport),
@@ -145,6 +146,9 @@ final class CommunityClient {
 
   /// Reports.
   final ReportsApi reports;
+
+  /// The moderation archive: what reports removed. Secret key only.
+  final ArchiveApi archive;
 
   /// Notifications.
   final NotificationsApi notifications;
@@ -330,6 +334,9 @@ final class Community {
 
   /// Reports.
   ReportsApi get reports => client.reports;
+
+  /// The moderation archive: what reports removed. Secret key only.
+  ArchiveApi get archive => client.archive;
 
   /// Notifications.
   NotificationsApi get notifications => client.notifications;

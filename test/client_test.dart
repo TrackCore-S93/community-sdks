@@ -214,6 +214,8 @@ void main() {
       () => c.members.list(),
       () => c.members.setRole('ali', Role.coach),
       () => c.reports.list(),
+      () => c.archive.list(),
+      () => c.archive.get('cm_arc_1'),
       () => c.users.delete('ali'),
     ];
     for (final call in calls) {
@@ -516,8 +518,57 @@ void main() {
         'GET /v1/community/summary');
   });
 
+  test('the moderation archive is read with a secret key', () async {
+    final item = {
+      'id': 'cm_arc_1',
+      'kind': 'post',
+      'target_id': 'cm_post_1',
+      'post_id': 'cm_post_1',
+      'parent_comment_id': null,
+      'topic_id': 'cm_top_1',
+      'body': 'spam',
+      'images': <Object?>[],
+      'author': {'external_id': 'author', 'username': 'Author'},
+      'reason': 'reports',
+      'reports': 5,
+      'threshold': 5,
+      'reported_by': [
+        {
+          'external_id': 'm0',
+          'username': 'Mo',
+          'reason': 'Spam content',
+          'created_at': '2026-11-17T10:00:00Z'
+        }
+      ],
+      'created_at': '2026-11-17T09:00:00Z',
+      'archived_at': '2026-11-17T10:00:01Z',
+    };
+    final adapter = FakeAdapter([
+      json(200, {
+        'archived': [item],
+        'next_cursor': 'abc'
+      }),
+      json(200, item),
+    ]);
+    final c = CommunityClient.serverSideSecret(
+        apiKey: secretKey, baseUrl: base, httpAdapter: adapter);
+    final page = await c.archive.list(limit: 2, before: 'xyz');
+    expect(page.archived.single.id, 'cm_arc_1');
+    expect(page.archived.single.reportedBy.single.reason, 'Spam content');
+    expect(page.nextCursor, 'abc');
+    final one = await c.archive.get('cm_arc_1');
+    expect(one.body, 'spam');
+    expect(one.author.externalId, 'author');
+    expect(adapter.calls.map((x) => '${x.method} ${x.path}'), [
+      'GET /v1/moderation/archive?limit=2&before=xyz',
+      'GET /v1/moderation/archive/cm_arc_1',
+    ]);
+    expect(
+        () => c.archive.get(''), throwsA(isA<CommunityValidationException>()));
+  });
+
   test('the SDK has a call for every route in the contract', () {
-    expect(operations, hasLength(53));
+    expect(operations, hasLength(55));
     expect(operations.map((o) => o.sdk).toSet(), implemented);
   });
 
@@ -683,6 +734,8 @@ const Set<String> implemented = {
   'reports.reportPost',
   'reports.reportComment',
   'reports.list',
+  'archive.list',
+  'archive.get',
   'notifications.list',
   'notifications.unreadCount',
   'notifications.markAllRead',
