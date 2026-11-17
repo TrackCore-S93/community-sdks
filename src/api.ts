@@ -188,7 +188,11 @@ export class TopicsAPI extends Namespace {
 
 /** Posts and the feed. */
 export class PostsAPI extends Namespace {
-  /** One page of the feed, newest first. Send `before` or `after`, not both. */
+  /**
+   * One page of the feed, newest first. Send `before` or `after`, not both.
+   * `limit` is the page size, 1 to 40: the app's own choice, 20 when left
+   * out. Send the same `limit` with every page.
+   */
   feed(params: { topicId?: string; limit?: number; before?: string; after?: string } & CallOptions = {}): Promise<T.Feed> {
     if (params.before && params.after) throw new ValidationError("before", "Send before or after, not both.");
     return this.transport.request({
@@ -469,7 +473,6 @@ export interface UpdateSettingsParams extends CallOptions {
   reactionOrder?: T.ReactionOrder;
   commentRepliesEnabled?: boolean;
   feedMode?: T.FeedMode;
-  feedPageSize?: number;
   reportThreshold?: number;
   searchPageSize?: number;
   bioMaxLength?: number;
@@ -494,7 +497,7 @@ export class SettingsAPI extends Namespace {
       body: {
         max_images_per_post: changes.maxImagesPerPost, image_size: changes.imageSize,
         reaction_order: changes.reactionOrder, comment_replies_enabled: changes.commentRepliesEnabled,
-        feed_mode: changes.feedMode, feed_page_size: changes.feedPageSize, report_threshold: changes.reportThreshold,
+        feed_mode: changes.feedMode, report_threshold: changes.reportThreshold,
         search_page_size: changes.searchPageSize, bio_max_length: changes.bioMaxLength,
         profile_viewing_enabled: changes.profileViewingEnabled,
         push_enabled: changes.pushEnabled,

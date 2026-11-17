@@ -1800,7 +1800,7 @@ paths:
             type: string
           example: "protein shake"
         - $ref: '#/components/parameters/TopicFilter'
-        - $ref: '#/components/parameters/LimitPosts'
+        - $ref: '#/components/parameters/LimitSearch'
         - name: before
           in: query
           required: false
@@ -4068,10 +4068,18 @@ components:
       name: limit
       in: query
       required: false
-      description: "Page size, 1 to 40. Left out, the creator's setting."
+      description: "Page size, 1 to 40: the app's choice. Left out, 20."
       schema:
         type: integer
       example: 20
+    LimitSearch:
+      name: limit
+      in: query
+      required: false
+      description: "Page size, 1 to 40. Left out, the creator's `search_page_size`."
+      schema:
+        type: integer
+      example: 10
     Limit:
       name: limit
       in: query
@@ -4708,7 +4716,7 @@ components:
             - $ref: '#/components/schemas/FeedMode'
         page_size:
           type: integer
-          description: "The creator's feed page size."
+          description: "How many posts this read was limited to: the `limit` sent, or 20."
           example: 20
     CreatePostRequest:
       type: object
@@ -5297,7 +5305,7 @@ components:
       type: object
       description: "What the creator has chosen for the community."
       x-go-type: httpx.settingsBody
-      required: [max_images_per_post, image_size, image_max_dimension, reaction_order, comment_replies_enabled, feed_mode, feed_page_size, report_threshold, search_page_size, bio_max_length, profile_viewing_enabled, push_enabled, max_image_upload_bytes, image_uploads_enabled]
+      required: [max_images_per_post, image_size, image_max_dimension, reaction_order, comment_replies_enabled, feed_mode, report_threshold, search_page_size, bio_max_length, profile_viewing_enabled, push_enabled, max_image_upload_bytes, image_uploads_enabled]
       properties:
         max_images_per_post:
           type: integer
@@ -5323,10 +5331,6 @@ components:
           description: "How the app presents the feed."
           allOf:
             - $ref: '#/components/schemas/FeedMode'
-        feed_page_size:
-          type: integer
-          description: "Posts per load or page, 1 to 40."
-          example: 20
         report_threshold:
           type: integer
           description: "Reports that remove a post or comment from the community, 1 or more."
@@ -5401,10 +5405,6 @@ components:
             - $ref: '#/components/schemas/FeedMode'
             - type: 'null'
           description: "`infinite_scroll` or `pages`."
-        feed_page_size:
-          type: [integer, 'null']
-          description: "1 to 40."
-          example: 20
         report_threshold:
           type: [integer, 'null']
           description: "1 or more. Lowering it removes at once whatever already has that many reports."

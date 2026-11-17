@@ -119,7 +119,7 @@ test("creator calls need a secret key, checked before sending", async () => {
   const { fetch, calls } = fakeFetch([session()]);
   const c = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch });
   await c.initialize("ali");
-  for (const call of [() => c.topics.create({ name: "X" }), () => c.settings.update({ feedPageSize: 10 }), () => c.posts.pin("cm_post_1"),
+  for (const call of [() => c.topics.create({ name: "X" }), () => c.settings.update({ searchPageSize: 10 }), () => c.posts.pin("cm_post_1"),
     () => c.members.list(), () => c.members.setRole("ali", "coach"), () => c.reports.list(), () => c.archive.list(), () => c.archive.get("cm_arc_1"), () => c.users.delete("ali")]) {
     await assert.rejects(call(), (e) => e instanceof ConfigurationError && e.reason === "secret_key_required");
   }
@@ -163,7 +163,7 @@ test("a reply that is not from the API is a ProtocolError that hides its body", 
 });
 
 test("retries: what is tried again and what is not", async () => {
-  const settings = json.bind(null, 200, { feed_page_size: 20 });
+  const settings = json.bind(null, 200, { search_page_size: 10 });
   const client = (replies, retry = {}) => {
     const f = fakeFetch(replies);
     const events = [];

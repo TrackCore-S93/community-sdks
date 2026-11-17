@@ -318,7 +318,7 @@ export interface Feed {
   has_more: boolean;
   /** The creator's feed mode. */
   mode: FeedMode;
-  /** The creator's feed page size. */
+  /** How many posts this read was limited to: the `limit` sent, or 20. */
   page_size: number;
 }
 
@@ -654,8 +654,6 @@ export interface Settings {
   comment_replies_enabled: boolean;
   /** How the app presents the feed. */
   feed_mode: FeedMode;
-  /** Posts per load or page, 1 to 40. */
-  feed_page_size: number;
   /** Reports that remove a post or comment from the community, 1 or more. */
   report_threshold: number;
   /** Search results per page, 1 to 40. */
@@ -694,8 +692,6 @@ export interface UpdateSettingsRequest {
   comment_replies_enabled?: boolean | null;
   /** `infinite_scroll` or `pages`. */
   feed_mode?: FeedMode | null;
-  /** 1 to 40. */
-  feed_page_size?: number | null;
   /** 1 or more. Lowering it removes at once whatever already has that many reports. */
   report_threshold?: number | null;
   /** 1 to 40. */

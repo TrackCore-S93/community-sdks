@@ -47,9 +47,9 @@ test("a whole community, through the SDK", { skip }, async () => {
   // The creator's backend: a secret key.
   const creator = new Community({ apiKey: secretKey, baseUrl, runtime: "server" });
   assert.equal((await creator.whoAmI()).key_kind, "secret");
-  const settings = await creator.settings.update({ commentRepliesEnabled: true, feedPageSize: 2, searchPageSize: 5 });
+  const settings = await creator.settings.update({ commentRepliesEnabled: true, searchPageSize: 5 });
   assert.equal(settings.comment_replies_enabled, true);
-  assert.equal(settings.feed_page_size, 2);
+  assert.equal(settings.feed_page_size, undefined, "the page size is the app's, not a setting");
   const workout = await creator.topics.create({ name: "Workout", isTrending: true });
   const food = await creator.topics.create({ name: "Food" });
   await assert.rejects(creator.topics.create({ name: "workout" }), (e) => isErrorOfCode(e, "topic_name_taken") && e instanceof ResourceError);
@@ -105,13 +105,13 @@ test("a whole community, through the SDK", { skip }, async () => {
     assert.equal(events.find((e) => e.post_id === first.id).author_external_id, "ali");
   }
 
-  // The feed, a page at a time (the creator set 2 per page).
-  let page = await sara.posts.feed();
+  // The feed, a page at a time: the app asks for 2 per page.
+  let page = await sara.posts.feed({ limit: 2 });
   assert.equal(page.posts.length, 2);
   assert.equal(page.page_size, 2);
   assert.equal(page.posts[0].body, "rest day");
   assert.equal(page.posts[0].is_mine, true);
-  const older = await sara.posts.feed({ before: page.next_cursor });
+  const older = await sara.posts.feed({ limit: 2, before: page.next_cursor });
   assert.deepEqual(older.posts.map((p) => p.body), ["Leg day protein"]);
   assert.equal(older.next_cursor, null);
   assert.deepEqual((await sara.posts.feed({ topicId: food.id })).posts.map((p) => p.body), ["protein pancakes"]);
