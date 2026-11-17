@@ -94,6 +94,17 @@ export class CommunityAPI extends Namespace {
       method: "GET", path: `/v1/community/members/${enc(externalId)}`, audience: "member_or_creator", signal: options.signal,
     });
   }
+
+  /**
+   * The community at a glance, for the card that leads into it: how many
+   * members it has, and the profile photos of up to four members who have
+   * one, picked at random on every call. The user need not have joined.
+   */
+  summary(options: CallOptions = {}): Promise<T.CommunitySummary> {
+    return this.transport.request({
+      method: "GET", path: "/v1/community/summary", audience: "member_or_creator", signal: options.signal,
+    });
+  }
 }
 
 /** The creator's member list and roles. Secret key only. */

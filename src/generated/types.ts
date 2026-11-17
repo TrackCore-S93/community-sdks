@@ -86,6 +86,14 @@ export interface Profile {
   updated_at: string;
 }
 
+/** The community at a glance. */
+export interface CommunitySummary {
+  /** How many users have joined the community. */
+  members_count: number;
+  /** Links to the profile photos of up to four members who have one, picked at random on every call. Empty when nobody has a photo. The links expire, like every image link. */
+  avatar_urls: string[];
+}
+
 /** A member's profile as another reader sees it. */
 export interface Member {
   /** Your own id for the user. */

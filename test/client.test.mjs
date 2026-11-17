@@ -278,7 +278,7 @@ test("requests are shaped as the API expects", async () => {
 test("the SDK has a call for every route in the contract", () => {
   const { fetch } = fakeFetch([]);
   const c = new Community({ apiKey: SECRET, baseUrl: base, fetch, runtime: "server" });
-  assert.equal(OPERATIONS.length, 52);
+  assert.equal(OPERATIONS.length, 53);
   for (const op of OPERATIONS) {
     const [namespace, method] = op.sdk.split(".");
     const owner = namespace === "client" ? c : c[namespace];
@@ -392,4 +392,14 @@ test("push: a failed unregister does not stop sign-out, and nothing is sent with
   assert.equal(await c.push.unregister(), false);
   await c.signOut();
   assert.equal(f.calls.length, 2);
+});
+
+test("community.summary returns the member count and a few photos", async () => {
+  const f = fakeFetch([session(), json(200, { members_count: 124, avatar_urls: ["https://img/a.webp", "https://img/b.webp"] })]);
+  const c = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch: f.fetch });
+  await c.initialize("ali");
+  const summary = await c.community.summary();
+  assert.equal(summary.members_count, 124);
+  assert.deepEqual(summary.avatar_urls, ["https://img/a.webp", "https://img/b.webp"]);
+  assert.equal(f.calls[1].method + " " + f.calls[1].url, `GET ${base}/v1/community/summary`);
 });

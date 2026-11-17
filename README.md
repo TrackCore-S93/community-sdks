@@ -55,7 +55,7 @@ network call.
 
 | Namespace | Calls |
 |---|---|
-| `community` | `me`, `join`, `usernameAvailable`, `updateProfile`, `member` |
+| `community` | `me`, `join`, `usernameAvailable`, `updateProfile`, `member`, `summary` |
 | `topics` | `list`, `get`, and for the creator `create`, `update`, `delete` |
 | `posts` | `feed`, `get`, `create`, `delete`, `search`, and for the creator `pin`, `unpin` |
 | `comments` | `list`, `replies`, `create`, `delete` |

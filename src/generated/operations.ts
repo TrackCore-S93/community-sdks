@@ -21,6 +21,7 @@ export const OPERATIONS: readonly OperationSpec[] = [
   { sdk: "community.updateProfile", operationId: "updateMyProfile", method: "PATCH", path: "/v1/community/me", auth: "member" },
   { sdk: "community.usernameAvailable", operationId: "checkUsername", method: "GET", path: "/v1/community/username-available", auth: "member" },
   { sdk: "community.join", operationId: "joinCommunity", method: "POST", path: "/v1/community/join", auth: "member" },
+  { sdk: "community.summary", operationId: "getCommunitySummary", method: "GET", path: "/v1/community/summary", auth: "member_or_creator" },
   { sdk: "community.member", operationId: "getMember", method: "GET", path: "/v1/community/members/{external_id}", auth: "member_or_creator" },
   { sdk: "members.setRole", operationId: "setMemberRole", method: "PATCH", path: "/v1/community/members/{external_id}", auth: "creator" },
   { sdk: "members.list", operationId: "listMembers", method: "GET", path: "/v1/community/members", auth: "creator" },
