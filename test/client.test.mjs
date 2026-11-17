@@ -421,3 +421,16 @@ test("the moderation archive is read with a secret key", async () => {
   await assert.rejects(async () => c.archive.get(""), ValidationError);
   assert.equal(calls.length, 2);
 });
+
+test("a profile carries the member's post and comment counts", async () => {
+  const profile = { external_id: "ali", username: "Annie", posts_count: 12, comments_count: 48 };
+  const f = fakeFetch([session(), json(200, { joined: true, profile }), json(200, { ...profile, is_me: false })]);
+  const c = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch: f.fetch });
+  await c.initialize("sara");
+  const me = await c.community.me();
+  assert.equal(me.profile.posts_count, 12);
+  assert.equal(me.profile.comments_count, 48);
+  const other = await c.community.member("ali");
+  assert.equal(other.posts_count, 12);
+  assert.equal(other.comments_count, 48);
+});

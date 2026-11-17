@@ -84,6 +84,10 @@ export interface Profile {
   joined_at: string;
   /** When the profile last changed. */
   updated_at: string;
+  /** How many posts the member has in the community now. Deleted and removed posts are not counted. */
+  posts_count: number;
+  /** How many comments and replies the member has in the community now. Deleted and removed ones are not counted. */
+  comments_count: number;
 }
 
 /** The community at a glance. */
@@ -114,6 +118,10 @@ export interface Member {
   joined_at: string;
   /** When the profile last changed. */
   updated_at: string;
+  /** How many posts the member has in the community now. Deleted and removed posts are not counted. */
+  posts_count: number;
+  /** How many comments and replies the member has in the community now. Deleted and removed ones are not counted. */
+  comments_count: number;
   /** True when the profile is the reader's own, the only one they can edit. */
   is_me: boolean;
 }

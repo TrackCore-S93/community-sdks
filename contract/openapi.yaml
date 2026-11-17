@@ -4240,7 +4240,7 @@ components:
       type: object
       description: "One member of the community."
       x-go-type: httpx.profileBody
-      required: [external_id, username, avatar_url, cover_url, bio, role, version, joined_at, updated_at]
+      required: [external_id, username, avatar_url, cover_url, bio, role, version, joined_at, updated_at, posts_count, comments_count]
       properties:
         external_id:
           type: string
@@ -4278,6 +4278,14 @@ components:
           type: string
           format: date-time
           description: "When the profile last changed."
+        posts_count:
+          type: integer
+          description: "How many posts the member has in the community now. Deleted and removed posts are not counted."
+          example: 12
+        comments_count:
+          type: integer
+          description: "How many comments and replies the member has in the community now. Deleted and removed ones are not counted."
+          example: 48
     CommunitySummary:
       type: object
       description: "The community at a glance."
@@ -4298,7 +4306,7 @@ components:
       type: object
       description: "A member's profile as another reader sees it."
       x-go-type: httpx.memberBody
-      required: [external_id, username, avatar_url, cover_url, bio, role, version, joined_at, updated_at, is_me]
+      required: [external_id, username, avatar_url, cover_url, bio, role, version, joined_at, updated_at, posts_count, comments_count, is_me]
       properties:
         external_id:
           type: string
@@ -4336,6 +4344,14 @@ components:
           type: string
           format: date-time
           description: "When the profile last changed."
+        posts_count:
+          type: integer
+          description: "How many posts the member has in the community now. Deleted and removed posts are not counted."
+          example: 12
+        comments_count:
+          type: integer
+          description: "How many comments and replies the member has in the community now. Deleted and removed ones are not counted."
+          example: 48
         is_me:
           type: boolean
           description: "True when the profile is the reader's own, the only one they can edit."
