@@ -67,6 +67,7 @@ end. There is no token to fetch and no backend endpoint to build.
 | `blocks` | `list`, `block`, `unblock` |
 | `reports` | `reportPost`, `reportComment` |
 | `notifications` | `list`, `unreadCount`, `markRead`, `markAllRead` |
+| `push` | `register`, `unregister`, `preference`, `setEnabled` |
 | `settings` | `get` |
 | `live` | `connect` |
 | | `initialize`, `signOut`, `setSession`, `clearSession`, `whoAmI`, `currentUser`, `describeCredential` |

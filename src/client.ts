@@ -15,6 +15,7 @@ import {
   type MediaAPI,
   type NotificationsAPI,
   type PostsAPI,
+  type PushAPI,
   type ReactionsAPI,
   type ReportsAPI,
   type SettingsAPI,
@@ -183,6 +184,11 @@ export class Community {
   get reports(): Pick<ReportsAPI, "reportPost" | "reportComment"> { return this.#ready.reports; }
   /** Notifications. */
   get notifications(): NotificationsAPI { return this.#ready.notifications; }
+  /**
+   * Push notifications. Get the phone's push token from Expo's or Firebase's
+   * library and pass it to `push.register`; `signOut` unregisters it.
+   */
+  get push(): PushAPI { return this.#ready.push; }
   /** The creator's settings, to read. Changing them is the creator's, on a backend. */
   get settings(): Pick<SettingsAPI, "get"> { return this.#ready.settings; }
   /** Live updates. */

@@ -148,3 +148,19 @@ test("errors are the JavaScript SDK's, with the code to branch on", async () => 
   assert.ok(isErrorOfCode(error, "username_taken") && error instanceof core.ResourceError);
   assert.equal(error.message, "This username is already taken.");
 });
+
+test("push: the phone's token is registered, and signing out unregisters it", async () => {
+  const f = fakeFetch([
+    session(), json(200, { provider: "expo", platform: "ios", registered: true }),
+    json(200, { removed: true }), json(200, {}),
+  ]);
+  const client = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch: f.fetch });
+  await client.initialize("ali");
+  const device = await client.push.register({ token: "ExponentPushToken[abc]", platform: "ios" });
+  assert.equal(device.provider, "expo");
+  assert.equal(f.calls[1].method + " " + f.calls[1].url, `PUT ${base}/v1/push/devices`);
+  await client.signOut();
+  assert.equal(f.calls[2].url, base + "/v1/push/devices/unregister");
+  assert.equal(JSON.parse(f.calls[2].body).token, "ExponentPushToken[abc]");
+  assert.equal(f.calls[3].method, "DELETE");
+});
