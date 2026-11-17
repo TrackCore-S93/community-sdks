@@ -7787,7 +7787,9 @@
      "role",
      "version",
      "joined_at",
-     "updated_at"
+     "updated_at",
+     "posts_count",
+     "comments_count"
     ],
     "properties": {
      "external_id": {
@@ -7837,6 +7839,16 @@
       "type": "string",
       "format": "date-time",
       "description": "When the profile last changed."
+     },
+     "posts_count": {
+      "type": "integer",
+      "description": "How many posts the member has in the community now. Deleted and removed posts are not counted.",
+      "example": 12
+     },
+     "comments_count": {
+      "type": "integer",
+      "description": "How many comments and replies the member has in the community now. Deleted and removed ones are not counted.",
+      "example": 48
      }
     }
    },
@@ -7881,6 +7893,8 @@
      "version",
      "joined_at",
      "updated_at",
+     "posts_count",
+     "comments_count",
      "is_me"
     ],
     "properties": {
@@ -7931,6 +7945,16 @@
       "type": "string",
       "format": "date-time",
       "description": "When the profile last changed."
+     },
+     "posts_count": {
+      "type": "integer",
+      "description": "How many posts the member has in the community now. Deleted and removed posts are not counted.",
+      "example": 12
+     },
+     "comments_count": {
+      "type": "integer",
+      "description": "How many comments and replies the member has in the community now. Deleted and removed ones are not counted.",
+      "example": 48
      },
      "is_me": {
       "type": "boolean",

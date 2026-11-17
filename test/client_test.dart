@@ -567,6 +567,36 @@ void main() {
         () => c.archive.get(''), throwsA(isA<CommunityValidationException>()));
   });
 
+  test("a profile carries the member's post and comment counts", () async {
+    final profile = {
+      'external_id': 'ali',
+      'username': 'Annie',
+      'avatar_url': '',
+      'cover_url': '',
+      'bio': '',
+      'role': 'user',
+      'version': 1,
+      'joined_at': '2026-11-17T09:00:00Z',
+      'updated_at': '2026-11-17T09:00:00Z',
+      'posts_count': 12,
+      'comments_count': 48,
+    };
+    final adapter = FakeAdapter([
+      session(),
+      json(200, {'joined': true, 'profile': profile}),
+      json(200, {...profile, 'is_me': false}),
+    ]);
+    final c = CommunityClient.publishable(
+        apiKey: publishableKey, baseUrl: base, httpAdapter: adapter);
+    await c.initialize('sara');
+    final me = await c.community.me();
+    expect(me.profile!.postsCount, 12);
+    expect(me.profile!.commentsCount, 48);
+    final other = await c.community.member('ali');
+    expect(other.postsCount, 12);
+    expect(other.commentsCount, 48);
+  });
+
   test('the SDK has a call for every route in the contract', () {
     expect(operations, hasLength(55));
     expect(operations.map((o) => o.sdk).toSet(), implemented);

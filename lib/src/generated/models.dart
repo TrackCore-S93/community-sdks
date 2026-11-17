@@ -159,6 +159,8 @@ final class Profile {
     required this.version,
     required this.joinedAt,
     required this.updatedAt,
+    required this.postsCount,
+    required this.commentsCount,
   });
 
   /// Reads a [Profile] from the API's JSON.
@@ -172,6 +174,8 @@ final class Profile {
         version: (json['version'] as num).toInt(),
         joinedAt: DateTime.parse(json['joined_at'] as String),
         updatedAt: DateTime.parse(json['updated_at'] as String),
+        postsCount: (json['posts_count'] as num).toInt(),
+        commentsCount: (json['comments_count'] as num).toInt(),
       );
 
   /// Your own id for the user.
@@ -200,6 +204,12 @@ final class Profile {
 
   /// When the profile last changed.
   final DateTime updatedAt;
+
+  /// How many posts the member has in the community now. Deleted and removed posts are not counted.
+  final int postsCount;
+
+  /// How many comments and replies the member has in the community now. Deleted and removed ones are not counted.
+  final int commentsCount;
 }
 
 /// The community at a glance.
@@ -239,6 +249,8 @@ final class Member {
     required this.version,
     required this.joinedAt,
     required this.updatedAt,
+    required this.postsCount,
+    required this.commentsCount,
     required this.isMe,
   });
 
@@ -253,6 +265,8 @@ final class Member {
         version: (json['version'] as num).toInt(),
         joinedAt: DateTime.parse(json['joined_at'] as String),
         updatedAt: DateTime.parse(json['updated_at'] as String),
+        postsCount: (json['posts_count'] as num).toInt(),
+        commentsCount: (json['comments_count'] as num).toInt(),
         isMe: json['is_me'] as bool,
       );
 
@@ -282,6 +296,12 @@ final class Member {
 
   /// When the profile last changed.
   final DateTime updatedAt;
+
+  /// How many posts the member has in the community now. Deleted and removed posts are not counted.
+  final int postsCount;
+
+  /// How many comments and replies the member has in the community now. Deleted and removed ones are not counted.
+  final int commentsCount;
 
   /// True when the profile is the reader's own, the only one they can edit.
   final bool isMe;
