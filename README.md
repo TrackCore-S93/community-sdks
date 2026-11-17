@@ -58,7 +58,7 @@ end. There is no token to fetch and no backend endpoint to build.
 
 | Namespace | Calls |
 |---|---|
-| `community` | `me`, `join`, `usernameAvailable`, `updateProfile`, `member` |
+| `community` | `me`, `join`, `usernameAvailable`, `updateProfile`, `member`, `summary` |
 | `topics` | `list`, `get` |
 | `posts` | `feed`, `get`, `create`, `delete`, `search` |
 | `comments` | `list`, `replies`, `create`, `delete` |

@@ -164,3 +164,12 @@ test("push: the phone's token is registered, and signing out unregisters it", as
   assert.equal(JSON.parse(f.calls[2].body).token, "ExponentPushToken[abc]");
   assert.equal(f.calls[3].method, "DELETE");
 });
+
+test("community.summary is there for the card that leads into the community", async () => {
+  const f = fakeFetch([session(), json(200, { members_count: 124, avatar_urls: ["https://img/a.webp"] })]);
+  const client = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch: f.fetch });
+  await client.initialize("ali");
+  const summary = await client.community.summary();
+  assert.equal(summary.members_count, 124);
+  assert.equal(f.calls[1].url, base + "/v1/community/summary");
+});
