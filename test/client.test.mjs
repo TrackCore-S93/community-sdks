@@ -173,3 +173,44 @@ test("community.summary is there for the card that leads into the community", as
   assert.equal(summary.members_count, 124);
   assert.equal(f.calls[1].url, base + "/v1/community/summary");
 });
+
+// ---- the creator's client ----
+const creator = await import("../dist/esm/creator.js");
+const stated = { secretKeyIsEnteredByTheCreatorAndNotBuiltIntoTheApp: true };
+
+test("creator: the client needs a secret key and the statement about where it comes from", () => {
+  assert.throws(() => creator.createCreatorClient({ apiKey: SECRET, baseUrl: base }), (e) => e instanceof ConfigurationError && /never be built into an app/.test(e.message));
+  assert.throws(() => creator.createCreatorClient({ apiKey: PUBLISHABLE, baseUrl: base, ...stated }), (e) => e instanceof ConfigurationError && e.reason === "secret_key_required");
+  assert.throws(() => creator.createCreatorClient({ baseUrl: base, ...stated }), ConfigurationError);
+  // The members' client still refuses a secret key.
+  assert.throws(() => new Community({ apiKey: SECRET, baseUrl: base }), ConfigurationError);
+});
+
+test("creator: settings, topics, roles, pins, reports and erasing a user are sent with the secret key and no user", async () => {
+  const f = fakeFetch([
+    json(200, { feed_page_size: 30 }), json(201, { id: "cm_top_1", name: "Workout" }), json(200, { external_id: "u1", role: "coach" }),
+    json(200, { id: "cm_post_1", is_pinned: true }), json(200, { reports: [], report_threshold: 5 }), json(200, { external_id: "u1", deleted: true }),
+    json(200, { members: [], total: 0, next_cursor: null }), json(200, { id: "cm_post_1", deleted: true }),
+  ]);
+  const c = creator.createCreatorClient({ apiKey: SECRET, baseUrl: base, fetch: f.fetch, ...stated });
+  assert.equal((await c.settings.update({ feedPageSize: 30 })).feed_page_size, 30);
+  await c.topics.create({ name: "Workout" });
+  await c.members.setRole("u1", "coach");
+  await c.posts.pin("cm_post_1");
+  await c.reports.list();
+  await c.users.delete("u1");
+  await c.members.list({ q: "an" });
+  await c.posts.delete("cm_post_1");
+  assert.deepEqual(f.calls.map((x) => `${x.method} ${x.url.replace(base, "")}`), [
+    "PATCH /v1/settings", "POST /v1/topics", "PATCH /v1/community/members/u1", "PUT /v1/posts/cm_post_1/pin",
+    "GET /v1/reports", "DELETE /v1/users/u1", "GET /v1/community/members?q=an", "DELETE /v1/posts/cm_post_1",
+  ]);
+  for (const call of f.calls) {
+    assert.equal(call.headers.Authorization, "Bearer " + SECRET);
+    assert.equal(call.headers["X-External-Id"], undefined);
+    assert.equal(call.headers["X-Community-Session"], undefined);
+  }
+  assert.ok(!JSON.stringify(c).includes(SECRET), "the key leaked");
+  assert.ok(!c.describeCredential().includes(SECRET));
+  assert.equal(c.environment, "test");
+});

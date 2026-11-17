@@ -79,6 +79,23 @@ this client refuses to be built with.
 Everything the JavaScript SDK exports is exported from here too: the error
 classes, `isErrorOfCode`, `applyReaction` and every type.
 
+## The creator's client
+
+For an app that is given to the creator and nobody else (a CMS), there is a second entry with the calls that run the community: settings, topics, members and roles, pinning, reports, deleting any post or comment, and erasing a user.
+
+```ts
+import { createCreatorClient } from "@trackcore/community-react-native/creator";
+
+const creator = createCreatorClient({
+  apiKey: secretKeyTheCreatorEntered,   // cm_sk_…
+  secretKeyIsEnteredByTheCreatorAndNotBuiltIntoTheApp: true,
+});
+
+await creator.settings.update({ feedPageSize: 30 });
+```
+
+It takes the creator's **secret key**, which controls the whole community. The key must be entered by the creator while the app runs and kept in the device's secure storage. It must never be written in the app's code or config: anything built into an app can be read by whoever holds the app file. The members' client, `Community`, still refuses a secret key.
+
 ## Images from the device
 
 ```ts

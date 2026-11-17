@@ -13,9 +13,13 @@
       "import": { "types": "./dist/esm/index.d.ts", "default": "./dist/esm/index.js" },
       "require": { "types": "./dist/cjs/index.d.ts", "default": "./dist/cjs/index.js" }
     },
+    "./creator": {
+      "import": { "types": "./dist/esm/creator.d.ts", "default": "./dist/esm/creator.js" },
+      "require": { "types": "./dist/cjs/creator.d.ts", "default": "./dist/cjs/creator.js" }
+    },
     "./package.json": "./package.json"
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": ["dist", "creator", "README.md", "LICENSE"],
   "sideEffects": false,
   "scripts": {
     "build": "node scripts/build.mjs",
