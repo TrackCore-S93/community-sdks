@@ -482,7 +482,7 @@ export interface Reported {
   reported: boolean;
   /** True when this member had reported it before. */
   already_reported: boolean;
-  /** True when this report reached the creator's threshold and the item was deleted. */
+  /** True when this report reached the creator's threshold and the item was removed from the community. */
   removed: boolean;
 }
 
@@ -520,8 +520,62 @@ export interface ReportParty {
 export interface ReportList {
   /** Newest first. */
   reports: Report[];
-  /** The number of reports at which an item is deleted. */
+  /** The number of reports at which an item is removed from the community. */
   report_threshold: number;
+}
+
+/** A post or comment that was removed from the community by reports and kept. */
+export interface Archived {
+  /** The archived item's id. */
+  id: string;
+  /** `post` or `comment`. */
+  kind: string;
+  /** The post or comment that was archived. */
+  target_id: string;
+  /** The post itself, or the post the comment is under. */
+  post_id: string;
+  /** Set when the comment is a reply: the comment it sits under. */
+  parent_comment_id: string | null;
+  /** The topic it was written in. */
+  topic_id: string;
+  /** Its whole text. */
+  body: string;
+  /** Its pictures. */
+  images: Image[];
+  /** Who wrote it. */
+  author: ReportParty;
+  /** Why it was archived. `reports`: it reached the report threshold. */
+  reason: string;
+  /** How many different members had reported it when it was archived. */
+  reports: number;
+  /** The report threshold at that moment. */
+  threshold: number;
+  /** The members who reported it, oldest first. A reporter who has since been erased is not listed. */
+  reported_by: ArchivedReporter[];
+  /** When it was written. */
+  created_at: string;
+  /** When it was archived. */
+  archived_at: string;
+}
+
+/** A member who reported an archived item. */
+export interface ArchivedReporter {
+  /** Your own id for the user. */
+  external_id: string;
+  /** The name the member chose in the community. */
+  username: string;
+  /** The reason they gave. */
+  reason: string;
+  /** When they reported it. */
+  created_at: string;
+}
+
+/** One page of the moderation archive. */
+export interface ArchiveList {
+  /** Newest first. */
+  archived: Archived[];
+  /** Pass as `before` for the next page. Null at the end. */
+  next_cursor: string | null;
 }
 
 /** One member being told what another did to what they wrote. */
@@ -602,7 +656,7 @@ export interface Settings {
   feed_mode: FeedMode;
   /** Posts per load or page, 1 to 40. */
   feed_page_size: number;
-  /** Reports that delete a post or comment, 1 or more. */
+  /** Reports that remove a post or comment from the community, 1 or more. */
   report_threshold: number;
   /** Search results per page, 1 to 40. */
   search_page_size: number;
@@ -620,7 +674,7 @@ export interface Settings {
   removed_by_threshold?: RemovedByThreshold;
 }
 
-/** What a new report threshold deleted at once. */
+/** What a new report threshold removed at once. */
 export interface RemovedByThreshold {
   /** Posts deleted. */
   posts: number;
@@ -642,7 +696,7 @@ export interface UpdateSettingsRequest {
   feed_mode?: FeedMode | null;
   /** 1 to 40. */
   feed_page_size?: number | null;
-  /** 1 or more. Lowering it deletes at once whatever already has that many reports. */
+  /** 1 or more. Lowering it removes at once whatever already has that many reports. */
   report_threshold?: number | null;
   /** 1 to 40. */
   search_page_size?: number | null;

@@ -38,7 +38,7 @@ export type Diagnostic =
 export interface CommunityOptions {
   /** A `cm_sk_…` key on a server, a `cm_pk_…` key in an app or a browser. Falls back to COMMUNITY_API_KEY. */
   apiKey?: string;
-  /** Where the API answers. Falls back to COMMUNITY_BASE_URL, then https://community.trackcore.app. */
+  /** Where the API answers. Falls back to COMMUNITY_BASE_URL, then https://api.community.trackcore.app. */
   baseUrl?: string;
   /** How long a session minted by `initialize` lives, 60 to 86400 seconds. 86400 by default. */
   sessionTtlSeconds?: number;

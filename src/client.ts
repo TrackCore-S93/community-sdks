@@ -2,7 +2,7 @@ import { ConfigurationError } from "./errors.js";
 import type { CallOptions, CommunityOptions } from "./options.js";
 import { Transport } from "./transport.js";
 import {
-  AuthAPI, BlocksAPI, CommentsAPI, CommunityAPI, MembersAPI, NotificationsAPI, PostsAPI, PushAPI, ReportsAPI, SettingsAPI,
+  ArchiveAPI, AuthAPI, BlocksAPI, CommentsAPI, CommunityAPI, MembersAPI, NotificationsAPI, PostsAPI, PushAPI, ReportsAPI, SettingsAPI,
   TopicsAPI, UsersAPI,
 } from "./api.js";
 import { LiveAPI } from "./live.js";
@@ -153,6 +153,8 @@ export class Community {
   get blocks(): BlocksAPI { return this.#ready.apis.blocks; }
   /** Reports. */
   get reports(): ReportsAPI { return this.#ready.apis.reports; }
+  /** The moderation archive: what reports removed. Secret key only. */
+  get archive(): ArchiveAPI { return this.#ready.apis.archive; }
   /** Notifications. */
   get notifications(): NotificationsAPI { return this.#ready.apis.notifications; }
   /** Push notifications to the phone. */
@@ -183,6 +185,7 @@ function buildAPIs(transport: Transport, options: CommunityOptions) {
     media: new MediaAPI(transport, transport.fetch),
     blocks: new BlocksAPI(transport),
     reports: new ReportsAPI(transport),
+    archive: new ArchiveAPI(transport),
     notifications: new NotificationsAPI(transport),
     push: new PushAPI(transport),
     settings: new SettingsAPI(transport),

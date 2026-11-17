@@ -12,7 +12,7 @@ import { DEFAULT_RETRY_POLICY, type CommunityOptions, type Diagnostic, type Fetc
 import { detectRuntime, env, type Runtime } from "./runtime.js";
 import type { Session } from "./generated/types.js";
 
-export const DEFAULT_BASE_URL = "https://community.trackcore.app";
+export const DEFAULT_BASE_URL = "https://api.community.trackcore.app";
 export const SESSION_HEADER = "X-Community-Session";
 export const EXTERNAL_ID_HEADER = "X-External-Id";
 export const IDEMPOTENCY_HEADER = "Idempotency-Key";

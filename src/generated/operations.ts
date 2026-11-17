@@ -58,6 +58,8 @@ export const OPERATIONS: readonly OperationSpec[] = [
   { sdk: "reports.reportPost", operationId: "reportPost", method: "POST", path: "/v1/posts/{post_id}/reports", auth: "member" },
   { sdk: "reports.reportComment", operationId: "reportComment", method: "POST", path: "/v1/comments/{comment_id}/reports", auth: "member" },
   { sdk: "reports.list", operationId: "listReports", method: "GET", path: "/v1/reports", auth: "creator" },
+  { sdk: "archive.list", operationId: "listArchive", method: "GET", path: "/v1/moderation/archive", auth: "creator" },
+  { sdk: "archive.get", operationId: "getArchived", method: "GET", path: "/v1/moderation/archive/{archive_id}", auth: "creator" },
   { sdk: "notifications.list", operationId: "listNotifications", method: "GET", path: "/v1/notifications", auth: "member" },
   { sdk: "notifications.unreadCount", operationId: "countUnreadNotifications", method: "GET", path: "/v1/notifications/unread-count", auth: "member" },
   { sdk: "notifications.markAllRead", operationId: "markAllNotificationsRead", method: "POST", path: "/v1/notifications/read", auth: "member" },

@@ -64,7 +64,7 @@ info:
     response lists the codes that route can answer with.
 
 servers:
-  - url: https://community.trackcore.app
+  - url: https://api.community.trackcore.app
     description: Live
 
 tags:
@@ -89,7 +89,7 @@ tags:
   - name: Blocks
     description: "Blocking members."
   - name: Reports
-    description: "Reporting posts and comments."
+    description: "Reporting posts and comments, and the archive of what reports removed."
   - name: Notifications
     description: "What others did to what a member wrote."
   - name: Push
@@ -3178,7 +3178,7 @@ paths:
       operationId: reportPost
       tags: [Reports]
       summary: "Report a post"
-      description: "One member can report one post once. When the number of different reporters reaches the creator's `report_threshold`, the post is deleted.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      description: "One member can report one post once. When the number of different reporters reaches the creator's `report_threshold`, the post is removed from the community: members no longer see it. It is kept in the moderation archive, not deleted.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
       x-community-auth: member
       x-community-sdk: reports.reportPost
       parameters:
@@ -3414,6 +3414,118 @@ paths:
         "504":
           description: "One of: `timeout`."
           x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/moderation/archive:
+    get:
+      operationId: listArchive
+      tags: [Reports]
+      summary: "The moderation archive"
+      description: "Posts and comments that reached the report threshold. They are not deleted: members no longer see them, and they are kept here with their whole text, pictures, author and the members who reported them. Newest first.\n\n**Who may call it.** Secret key only: the creator's backend."
+      x-community-auth: creator
+      x-community-sdk: archive.list
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Before'
+      responses:
+        "200":
+          description: "One page of the archive."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchiveList'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `forbidden`."
+          x-community-codes: [forbidden]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/moderation/archive/{archive_id}:
+    get:
+      operationId: getArchived
+      tags: [Reports]
+      summary: "One archived post or comment"
+      description: "One item of the moderation archive, by its archive id.\n\n**Who may call it.** Secret key only: the creator's backend."
+      x-community-auth: creator
+      x-community-sdk: archive.get
+      parameters:
+        - $ref: '#/components/parameters/ArchiveId'
+      responses:
+        "200":
+          description: "The archived item."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Archived'
+        "400":
+          description: "One of: `ambiguous_credentials`."
+          x-community-codes: [ambiguous_credentials]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `forbidden`."
+          x-community-codes: [forbidden]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "404":
+          description: "One of: `not_found`."
+          x-community-codes: [not_found]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
           content:
             application/json:
               schema:
@@ -3722,7 +3834,7 @@ paths:
       operationId: updateSettings
       tags: [Settings]
       summary: "Change settings"
-      description: "Send only the fields to change. Lowering `report_threshold` deletes at once whatever already has that many reports, and the reply says how much.\n\n**Who may call it.** Secret key only: the creator's backend."
+      description: "Send only the fields to change. Lowering `report_threshold` removes at once whatever already has that many reports, and the reply says how much.\n\n**Who may call it.** Secret key only: the creator's backend."
       x-community-auth: creator
       x-community-sdk: settings.update
       requestBody:
@@ -3920,6 +4032,14 @@ components:
       schema:
         type: string
       example: "cm_med_01HZX…"
+    ArchiveId:
+      name: archive_id
+      in: path
+      required: true
+      description: "The archived item's id."
+      schema:
+        type: string
+      example: "cm_arc_01HZX…"
     NotificationId:
       name: notification_id
       in: path
@@ -4888,7 +5008,7 @@ components:
           example: false
         removed:
           type: boolean
-          description: "True when this report reached the creator's threshold and the item was deleted."
+          description: "True when this report reached the creator's threshold and the item was removed from the community."
           example: false
     Report:
       type: object
@@ -4958,8 +5078,111 @@ components:
           description: "Newest first."
         report_threshold:
           type: integer
-          description: "The number of reports at which an item is deleted."
+          description: "The number of reports at which an item is removed from the community."
           example: 5
+    Archived:
+      type: object
+      description: "A post or comment that was removed from the community by reports and kept."
+      x-go-type: httpx.archivedBody
+      required: [id, kind, target_id, post_id, parent_comment_id, topic_id, body, images, author, reason, reports, threshold, reported_by, created_at, archived_at]
+      properties:
+        id:
+          type: string
+          description: "The archived item's id."
+          example: "cm_arc_…"
+        kind:
+          type: string
+          description: "`post` or `comment`."
+          example: "post"
+        target_id:
+          type: string
+          description: "The post or comment that was archived."
+          example: "cm_post_…"
+        post_id:
+          type: string
+          description: "The post itself, or the post the comment is under."
+          example: "cm_post_…"
+        parent_comment_id:
+          type: [string, 'null']
+          description: "Set when the comment is a reply: the comment it sits under."
+        topic_id:
+          type: string
+          description: "The topic it was written in."
+          example: "cm_top_…"
+        body:
+          type: string
+          description: "Its whole text."
+          example: "Buy followers at…"
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+          description: "Its pictures."
+        author:
+          description: "Who wrote it."
+          allOf:
+            - $ref: '#/components/schemas/ReportParty'
+        reason:
+          type: string
+          description: "Why it was archived. `reports`: it reached the report threshold."
+          example: "reports"
+        reports:
+          type: integer
+          description: "How many different members had reported it when it was archived."
+          example: 5
+        threshold:
+          type: integer
+          description: "The report threshold at that moment."
+          example: 5
+        reported_by:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArchivedReporter'
+          description: "The members who reported it, oldest first. A reporter who has since been erased is not listed."
+        created_at:
+          type: string
+          format: date-time
+          description: "When it was written."
+        archived_at:
+          type: string
+          format: date-time
+          description: "When it was archived."
+    ArchivedReporter:
+      type: object
+      description: "A member who reported an archived item."
+      x-go-type: httpx.archivedReporterBody
+      required: [external_id, username, reason, created_at]
+      properties:
+        external_id:
+          type: string
+          description: "Your own id for the user."
+          example: "user_42"
+        username:
+          type: string
+          description: "The name the member chose in the community."
+          example: "Annie"
+        reason:
+          type: string
+          description: "The reason they gave."
+          example: "Spam content"
+        created_at:
+          type: string
+          format: date-time
+          description: "When they reported it."
+    ArchiveList:
+      type: object
+      description: "One page of the moderation archive."
+      x-go-type: httpx.archiveListBody
+      required: [archived, next_cursor]
+      properties:
+        archived:
+          type: array
+          items:
+            $ref: '#/components/schemas/Archived'
+          description: "Newest first."
+        next_cursor:
+          type: [string, 'null']
+          description: "Pass as `before` for the next page. Null at the end."
     Notification:
       type: object
       description: "One member being told what another did to what they wrote."
@@ -5106,7 +5329,7 @@ components:
           example: 20
         report_threshold:
           type: integer
-          description: "Reports that delete a post or comment, 1 or more."
+          description: "Reports that remove a post or comment from the community, 1 or more."
           example: 5
         search_page_size:
           type: integer
@@ -5138,7 +5361,7 @@ components:
             - $ref: '#/components/schemas/RemovedByThreshold'
     RemovedByThreshold:
       type: object
-      description: "What a new report threshold deleted at once."
+      description: "What a new report threshold removed at once."
       x-go-type: httpx.removedBody
       required: [posts, comments]
       properties:
@@ -5184,7 +5407,7 @@ components:
           example: 20
         report_threshold:
           type: [integer, 'null']
-          description: "1 or more. Lowering it deletes at once whatever already has that many reports."
+          description: "1 or more. Lowering it removes at once whatever already has that many reports."
           example: 5
         search_page_size:
           type: [integer, 'null']

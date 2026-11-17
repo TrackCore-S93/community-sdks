@@ -335,6 +335,29 @@ export class ReportsAPI extends Namespace {
   }
 }
 
+/**
+ * The moderation archive: posts and comments that reached the report
+ * threshold. They are not deleted. Members no longer see them, and they are
+ * kept here. Secret key only.
+ */
+export class ArchiveAPI extends Namespace {
+  /** One page of the archive, newest first. */
+  list(params: { limit?: number; before?: string } & CallOptions = {}): Promise<T.ArchiveList> {
+    return this.transport.request({
+      method: "GET", path: "/v1/moderation/archive", audience: "creator", signal: params.signal,
+      query: { limit: params.limit, before: params.before },
+    });
+  }
+
+  /** One archived post or comment, by its archive id. */
+  get(archiveId: string, options: CallOptions = {}): Promise<T.Archived> {
+    required("archiveId", archiveId);
+    return this.transport.request({
+      method: "GET", path: `/v1/moderation/archive/${enc(archiveId)}`, audience: "creator", signal: options.signal,
+    });
+  }
+}
+
 /** Notifications: what others did to what the user wrote. */
 export class NotificationsAPI extends Namespace {
   /** One page of notifications, newest first. */

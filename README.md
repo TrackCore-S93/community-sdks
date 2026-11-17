@@ -31,7 +31,7 @@ import { Community } from "@trackcore/community-sdk";
 // Once, at start-up.
 Community.instance.configure({
   apiKey: process.env.COMMUNITY_API_KEY!,   // cm_sk_… on a server, cm_pk_… in a browser
-  baseUrl: "https://community.trackcore.app",
+  baseUrl: "https://api.community.trackcore.app",
 });
 
 // After your own sign-in, with whatever identifies the user in your system.
@@ -63,6 +63,7 @@ network call.
 | `media` | `upload`, `start`, `complete`, `get` |
 | `blocks` | `list`, `block`, `unblock` |
 | `reports` | `reportPost`, `reportComment`, and for the creator `list` |
+| `archive` | for the creator: `list`, `get`. Posts and comments removed by reports are kept here, not deleted |
 | `notifications` | `list`, `unreadCount`, `markRead`, `markAllRead` |
 | `push` | `register`, `unregister`, `preference`, `setEnabled` |
 | `settings` | `get`, and for the creator `update` |
@@ -80,7 +81,7 @@ A creator's call made with a publishable key throws `ConfigurationError`
 | Option | Default | Meaning |
 |---|---|---|
 | `apiKey` | `COMMUNITY_API_KEY` | `cm_sk_…` on a server, `cm_pk_…` in a browser |
-| `baseUrl` | `COMMUNITY_BASE_URL`, else `https://community.trackcore.app` | Where the API answers |
+| `baseUrl` | `COMMUNITY_BASE_URL`, else `https://api.community.trackcore.app` | Where the API answers |
 | `sessionTtlSeconds` | 86400 | How long a session minted by `initialize` lives, 60 to 86400 |
 | `timeoutMs` | 10 000 | One attempt |
 | `deadlineMs` | 30 000 | The whole call, retries and backoff included |

@@ -120,7 +120,7 @@ test("creator calls need a secret key, checked before sending", async () => {
   const c = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch });
   await c.initialize("ali");
   for (const call of [() => c.topics.create({ name: "X" }), () => c.settings.update({ feedPageSize: 10 }), () => c.posts.pin("cm_post_1"),
-    () => c.members.list(), () => c.members.setRole("ali", "coach"), () => c.reports.list(), () => c.users.delete("ali")]) {
+    () => c.members.list(), () => c.members.setRole("ali", "coach"), () => c.reports.list(), () => c.archive.list(), () => c.archive.get("cm_arc_1"), () => c.users.delete("ali")]) {
     await assert.rejects(call(), (e) => e instanceof ConfigurationError && e.reason === "secret_key_required");
   }
   assert.equal(calls.length, 1);
@@ -278,7 +278,7 @@ test("requests are shaped as the API expects", async () => {
 test("the SDK has a call for every route in the contract", () => {
   const { fetch } = fakeFetch([]);
   const c = new Community({ apiKey: SECRET, baseUrl: base, fetch, runtime: "server" });
-  assert.equal(OPERATIONS.length, 53);
+  assert.equal(OPERATIONS.length, 55);
   for (const op of OPERATIONS) {
     const [namespace, method] = op.sdk.split(".");
     const owner = namespace === "client" ? c : c[namespace];
@@ -402,4 +402,22 @@ test("community.summary returns the member count and a few photos", async () => 
   assert.equal(summary.members_count, 124);
   assert.deepEqual(summary.avatar_urls, ["https://img/a.webp", "https://img/b.webp"]);
   assert.equal(f.calls[1].method + " " + f.calls[1].url, `GET ${base}/v1/community/summary`);
+});
+
+test("the moderation archive is read with a secret key", async () => {
+  const item = { id: "cm_arc_1", kind: "post", target_id: "cm_post_1", body: "spam", reported_by: [] };
+  const { fetch, calls } = fakeFetch([
+    json(200, { archived: [item], next_cursor: "abc" }),
+    json(200, item),
+  ]);
+  const c = new Community({ apiKey: SECRET, baseUrl: base, fetch, runtime: "server" });
+  const page = await c.archive.list({ limit: 2, before: "xyz" });
+  assert.equal(page.archived[0].id, "cm_arc_1");
+  assert.equal(page.next_cursor, "abc");
+  assert.equal(calls[0].url, `${base}/v1/moderation/archive?limit=2&before=xyz`);
+  const one = await c.archive.get("cm_arc_1");
+  assert.equal(one.body, "spam");
+  assert.equal(calls[1].url, `${base}/v1/moderation/archive/cm_arc_1`);
+  await assert.rejects(async () => c.archive.get(""), ValidationError);
+  assert.equal(calls.length, 2);
 });

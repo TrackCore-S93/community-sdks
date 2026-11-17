@@ -6,7 +6,7 @@ export {
   assertValidExternalId, DEFAULT_BASE_URL, EXTERNAL_ID_HEADER, IDEMPOTENCY_HEADER, MAX_EXTERNAL_ID_LENGTH, SESSION_HEADER,
 } from "./transport.js";
 export {
-  AuthAPI, BlocksAPI, CommentsAPI, CommunityAPI, MembersAPI, NotificationsAPI, PostsAPI, PushAPI, ReportsAPI, SettingsAPI,
+  ArchiveAPI, AuthAPI, BlocksAPI, CommentsAPI, CommunityAPI, MembersAPI, NotificationsAPI, PostsAPI, PushAPI, ReportsAPI, SettingsAPI,
   TopicsAPI, UsersAPI, newIdempotencyKey, type CreateTopicParams, type RegisterPushParams, type UpdateSettingsParams,
 } from "./api.js";
 export { ReactionsAPI, applyReaction } from "./reactions.js";
