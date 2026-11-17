@@ -48,7 +48,7 @@ Dart 3.4 or later.
 
 | API | Calls |
 |---|---|
-| `community` | `me`, `join`, `usernameAvailable`, `updateProfile`, `member` |
+| `community` | `me`, `join`, `usernameAvailable`, `updateProfile`, `member`, `summary` |
 | `topics` | `list`, `get`, `create`, `update`, `delete` |
 | `posts` | `feed`, `get`, `create`, `delete`, `search`, `pin`, `unpin` |
 | `comments` | `list`, `replies`, `create`, `delete` |

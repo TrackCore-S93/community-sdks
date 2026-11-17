@@ -202,6 +202,30 @@ final class Profile {
   final DateTime updatedAt;
 }
 
+/// The community at a glance.
+final class CommunitySummary {
+  /// Builds a [CommunitySummary]. Normally it comes from the API.
+  const CommunitySummary({
+    required this.membersCount,
+    required this.avatarUrls,
+  });
+
+  /// Reads a [CommunitySummary] from the API's JSON.
+  factory CommunitySummary.fromJson(Map<String, Object?> json) =>
+      CommunitySummary(
+        membersCount: (json['members_count'] as num).toInt(),
+        avatarUrls: (json['avatar_urls'] as List)
+            .map((e) => e as String)
+            .toList(growable: false),
+      );
+
+  /// How many users have joined the community.
+  final int membersCount;
+
+  /// Links to the profile photos of up to four members who have one, picked at random on every call. Empty when nobody has a photo. The links expire, like every image link.
+  final List<String> avatarUrls;
+}
+
 /// A member's profile as another reader sees it.
 final class Member {
   /// Builds a [Member]. Normally it comes from the API.

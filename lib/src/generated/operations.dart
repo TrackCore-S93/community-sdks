@@ -55,6 +55,12 @@ const List<OperationSpec> operations = [
     auth: 'member'
   ),
   (
+    sdk: 'community.summary',
+    method: 'GET',
+    path: '/v1/community/summary',
+    auth: 'member_or_creator'
+  ),
+  (
     sdk: 'community.member',
     method: 'GET',
     path: '/v1/community/members/{external_id}',

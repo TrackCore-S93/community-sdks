@@ -498,8 +498,26 @@ void main() {
     expect(c.sessionToken, isNull);
   });
 
+  test('community.summary returns the member count and a few photos', () async {
+    final adapter = FakeAdapter([
+      session(),
+      json(200, {
+        'members_count': 124,
+        'avatar_urls': ['https://img/a.webp', 'https://img/b.webp']
+      }),
+    ]);
+    final c = CommunityClient.publishable(
+        apiKey: publishableKey, baseUrl: base, httpAdapter: adapter);
+    await c.initialize('ali');
+    final summary = await c.community.summary();
+    expect(summary.membersCount, 124);
+    expect(summary.avatarUrls, ['https://img/a.webp', 'https://img/b.webp']);
+    expect('${adapter.calls[1].method} ${adapter.calls[1].path}',
+        'GET /v1/community/summary');
+  });
+
   test('the SDK has a call for every route in the contract', () {
-    expect(operations, hasLength(52));
+    expect(operations, hasLength(53));
     expect(operations.map((o) => o.sdk).toSet(), implemented);
   });
 
@@ -633,6 +651,7 @@ const Set<String> implemented = {
   'community.join',
   'community.updateProfile',
   'community.member',
+  'community.summary',
   'members.list',
   'members.setRole',
   'topics.list',

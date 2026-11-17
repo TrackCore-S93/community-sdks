@@ -1207,6 +1207,121 @@
     }
    }
   },
+  "/v1/community/summary": {
+   "get": {
+    "operationId": "getCommunitySummary",
+    "tags": [
+     "Community"
+    ],
+    "summary": "The community at a glance",
+    "description": "How many members the community has, and the profile photos of up to four members who have one, picked at random on every call. For the card that leads into the community. The user need not have joined. A member is never shown someone they have a block with; the count is the whole community either way.\n\n**Who may call it.** For one end user (a publishable key with a session token, or a secret key with `X-External-Id`), or the creator's backend with a secret key alone.",
+    "x-community-auth": "member_or_creator",
+    "x-community-sdk": "community.summary",
+    "parameters": [
+     {
+      "$ref": "#/components/parameters/SessionHeader"
+     },
+     {
+      "$ref": "#/components/parameters/ExternalIdHeader"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "The count and the photos.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CommunitySummary"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "One of: `ambiguous_credentials`, `invalid_request`.",
+      "x-community-codes": [
+       "ambiguous_credentials",
+       "invalid_request"
+      ],
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorEnvelope"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`.",
+      "x-community-codes": [
+       "credential_missing",
+       "credential_malformed",
+       "credential_unknown",
+       "credential_revoked",
+       "session_invalid"
+      ],
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorEnvelope"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "One of: `user_scope_violation`.",
+      "x-community-codes": [
+       "user_scope_violation"
+      ],
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorEnvelope"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "One of: `internal_error`.",
+      "x-community-codes": [
+       "internal_error"
+      ],
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorEnvelope"
+        }
+       }
+      }
+     },
+     "503": {
+      "description": "One of: `service_unavailable`.",
+      "x-community-codes": [
+       "service_unavailable"
+      ],
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorEnvelope"
+        }
+       }
+      }
+     },
+     "504": {
+      "description": "One of: `timeout`.",
+      "x-community-codes": [
+       "timeout"
+      ],
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorEnvelope"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/v1/community/members/{external_id}": {
    "get": {
     "operationId": "getMember",
@@ -7491,6 +7606,33 @@
       "type": "string",
       "format": "date-time",
       "description": "When the profile last changed."
+     }
+    }
+   },
+   "CommunitySummary": {
+    "type": "object",
+    "description": "The community at a glance.",
+    "x-go-type": "httpx.communitySummaryBody",
+    "required": [
+     "members_count",
+     "avatar_urls"
+    ],
+    "properties": {
+     "members_count": {
+      "type": "integer",
+      "description": "How many users have joined the community.",
+      "example": 124
+     },
+     "avatar_urls": {
+      "type": "array",
+      "description": "Links to the profile photos of up to four members who have one, picked at random on every call. Empty when nobody has a photo. The links expire, like every image link.",
+      "items": {
+       "type": "string"
+      },
+      "example": [
+       "https://…/avatar-1.webp",
+       "https://…/avatar-2.webp"
+      ]
      }
     }
    },

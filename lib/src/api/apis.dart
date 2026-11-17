@@ -123,6 +123,13 @@ final class CommunityApi {
         'GET', '/v1/community/members/${_enc(externalId)}',
         audience: Audience.memberOrCreator)));
   }
+
+  /// The community at a glance, for the card that leads into it: how many
+  /// members it has, and the profile photos of up to four members who have
+  /// one, picked at random on every call. The user need not have joined.
+  Future<CommunitySummary> summary() async => CommunitySummary.fromJson(_object(
+      await _transport.request('GET', '/v1/community/summary',
+          audience: Audience.memberOrCreator)));
 }
 
 /// The creator's member list and roles. Secret key only.
