@@ -3259,7 +3259,7 @@
       "$ref": "#/components/parameters/TopicFilter"
      },
      {
-      "$ref": "#/components/parameters/LimitPosts"
+      "$ref": "#/components/parameters/LimitSearch"
      },
      {
       "name": "before",
@@ -7535,11 +7535,21 @@
     "name": "limit",
     "in": "query",
     "required": false,
-    "description": "Page size, 1 to 40. Left out, the creator's setting.",
+    "description": "Page size, 1 to 40: the app's choice. Left out, 20.",
     "schema": {
      "type": "integer"
     },
     "example": 20
+   },
+   "LimitSearch": {
+    "name": "limit",
+    "in": "query",
+    "required": false,
+    "description": "Page size, 1 to 40. Left out, the creator's `search_page_size`.",
+    "schema": {
+     "type": "integer"
+    },
+    "example": 10
    },
    "Limit": {
     "name": "limit",
@@ -8544,7 +8554,7 @@
      },
      "page_size": {
       "type": "integer",
-      "description": "The creator's feed page size.",
+      "description": "How many posts this read was limited to: the `limit` sent, or 20.",
       "example": 20
      }
     }
@@ -9512,7 +9522,6 @@
      "reaction_order",
      "comment_replies_enabled",
      "feed_mode",
-     "feed_page_size",
      "report_threshold",
      "search_page_size",
      "bio_max_length",
@@ -9563,11 +9572,6 @@
         "$ref": "#/components/schemas/FeedMode"
        }
       ]
-     },
-     "feed_page_size": {
-      "type": "integer",
-      "description": "Posts per load or page, 1 to 40.",
-      "example": 20
      },
      "report_threshold": {
       "type": "integer",
@@ -9688,14 +9692,6 @@
        }
       ],
       "description": "`infinite_scroll` or `pages`."
-     },
-     "feed_page_size": {
-      "type": [
-       "integer",
-       "null"
-      ],
-      "description": "1 to 40.",
-      "example": 20
      },
      "report_threshold": {
       "type": [

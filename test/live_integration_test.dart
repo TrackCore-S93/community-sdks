@@ -71,8 +71,8 @@ void main() {
     final creator =
         CommunityClient.serverSideSecret(apiKey: secret, baseUrl: baseUrl!);
     expect((await creator.whoAmI()).keyKind, 'secret');
-    final settings = await creator.settings.update(
-        commentRepliesEnabled: true, feedPageSize: 2, feedMode: FeedMode.pages);
+    final settings = await creator.settings
+        .update(commentRepliesEnabled: true, feedMode: FeedMode.pages);
     expect(settings.commentRepliesEnabled, isTrue);
     expect(settings.feedMode, FeedMode.pages);
     final workout =
@@ -139,12 +139,13 @@ void main() {
     expect(
         events.firstWhere((e) => e.postId == first.id).authorExternalId, 'ali');
 
-    // The feed, a page at a time (the creator set 2 per page, pages mode).
-    var page = await sara.posts.feed();
+    // The feed, a page at a time: the app asks for 2 per page; the creator
+    // chose pages mode.
+    var page = await sara.posts.feed(limit: 2);
     expect(page.posts.map((p) => p.body), ['rest day', 'protein pancakes']);
     expect(page.mode, FeedMode.pages);
     expect(page.posts.first.isMine, isTrue);
-    final older = await sara.posts.feed(before: page.nextCursor);
+    final older = await sara.posts.feed(limit: 2, before: page.nextCursor);
     expect(older.posts.map((p) => p.body), ['Leg day protein']);
     expect(older.prevCursor, isNotNull);
     expect((await sara.posts.search('prot')).posts.map((p) => p.body),

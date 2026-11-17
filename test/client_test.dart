@@ -209,7 +209,7 @@ void main() {
     await c.initialize('ali');
     final calls = <Future<Object?> Function()>[
       () => c.topics.create(name: 'X'),
-      () => c.settings.update(feedPageSize: 10),
+      () => c.settings.update(searchPageSize: 10),
       () => c.posts.pin('cm_post_1'),
       () => c.members.list(),
       () => c.members.setRole('ali', Role.coach),
@@ -679,7 +679,6 @@ const Map<String, Object?> settingsJson = {
   'reaction_order': 'most_used',
   'comment_replies_enabled': false,
   'feed_mode': 'infinite_scroll',
-  'feed_page_size': 20,
   'report_threshold': 5,
   'search_page_size': 10,
   'bio_max_length': 300,

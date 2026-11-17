@@ -244,6 +244,8 @@ final class PostsApi {
   final Transport _transport;
 
   /// One page of the feed, newest first. Pass [before] or [after], not both.
+  /// [limit] is the page size, 1 to 40: the app's own choice, 20 when left
+  /// out. Pass the same [limit] with every page.
   Future<Feed> feed(
       {String? topicId, int? limit, String? before, String? after}) async {
     if (before != null && after != null) {
@@ -568,7 +570,6 @@ final class SettingsApi {
     ReactionOrder? reactionOrder,
     bool? commentRepliesEnabled,
     FeedMode? feedMode,
-    int? feedPageSize,
     int? reportThreshold,
     int? searchPageSize,
     int? bioMaxLength,
@@ -585,7 +586,6 @@ final class SettingsApi {
                 'reaction_order': reactionOrder?.wire,
                 'comment_replies_enabled': commentRepliesEnabled,
                 'feed_mode': feedMode?.wire,
-                'feed_page_size': feedPageSize,
                 'report_threshold': reportThreshold,
                 'search_page_size': searchPageSize,
                 'bio_max_length': bioMaxLength,

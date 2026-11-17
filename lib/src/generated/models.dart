@@ -673,7 +673,7 @@ final class Feed {
   /// The creator's feed mode.
   final FeedMode mode;
 
-  /// The creator's feed page size.
+  /// How many posts this read was limited to: the `limit` sent, or 20.
   final int pageSize;
 }
 
@@ -1481,7 +1481,6 @@ final class Settings {
     required this.reactionOrder,
     required this.commentRepliesEnabled,
     required this.feedMode,
-    required this.feedPageSize,
     required this.reportThreshold,
     required this.searchPageSize,
     required this.bioMaxLength,
@@ -1501,7 +1500,6 @@ final class Settings {
             ReactionOrder.fromWire(json['reaction_order'] as String?),
         commentRepliesEnabled: json['comment_replies_enabled'] as bool,
         feedMode: FeedMode.fromWire(json['feed_mode'] as String?),
-        feedPageSize: (json['feed_page_size'] as num).toInt(),
         reportThreshold: (json['report_threshold'] as num).toInt(),
         searchPageSize: (json['search_page_size'] as num).toInt(),
         bioMaxLength: (json['bio_max_length'] as num).toInt(),
@@ -1532,9 +1530,6 @@ final class Settings {
 
   /// How the app presents the feed.
   final FeedMode feedMode;
-
-  /// Posts per load or page, 1 to 40.
-  final int feedPageSize;
 
   /// Reports that remove a post or comment from the community, 1 or more.
   final int reportThreshold;
