@@ -460,6 +460,68 @@ final class NotificationsApi {
   }
 }
 
+/// Push notifications: the same notifications, sent to the phone while the
+/// app is closed. Get a push token from the phone (Firebase's or Expo's
+/// library), then register it for the signed-in user.
+final class PushApi {
+  PushApi(this._transport);
+  final Transport _transport;
+  String? _token;
+
+  /// The token this client registered and has not unregistered, or null.
+  String? get registeredToken => _token;
+
+  /// Registers the phone's push token for the user. Safe to call on every
+  /// start: registering the same token again changes nothing. Signing out
+  /// unregisters it.
+  ///
+  /// [provider] is worked out from the token when left out. [platform] is
+  /// optional.
+  Future<PushDevice> register(String token,
+      {PushProvider? provider, PushPlatform? platform}) async {
+    _required('token', token);
+    final device = PushDevice.fromJson(
+        _object(await _transport.request('PUT', '/v1/push/devices',
+            audience: Audience.member,
+            repeatable: true,
+            body: _given({
+              'token': token,
+              'provider': provider?.wire,
+              'platform': platform?.wire,
+            }))));
+    _token = token;
+    return device;
+  }
+
+  /// Forgets a push token, so the phone stops getting this user's
+  /// notifications. Without a token it forgets the one this client
+  /// registered. Completes with whether a token was removed.
+  Future<bool> unregister([String? token]) async {
+    final target = token ?? _token;
+    if (target == null || target.isEmpty) return false;
+    final reply = PushUnregistered.fromJson(_object(await _transport.request(
+        'POST', '/v1/push/devices/unregister',
+        audience: Audience.member, repeatable: true, body: {'token': target})));
+    if (target == _token) _token = null;
+    return reply.removed;
+  }
+
+  /// The user's push switch, the creator's, and how many phones are
+  /// registered.
+  Future<PushPreference> preference() async =>
+      PushPreference.fromJson(_object(await _transport
+          .request('GET', '/v1/push/preferences', audience: Audience.member)));
+
+  /// Turns the user's push notifications on or off. The notification list is
+  /// not affected.
+  Future<PushPreference> setEnabled(bool enabled) async =>
+      PushPreference.fromJson(_object(await _transport.request(
+          'PUT', '/v1/push/preferences',
+          audience: Audience.member,
+          repeatable: true,
+          body: {'enabled': enabled})));
+}
+
 /// The creator's settings.
 final class SettingsApi {
   SettingsApi(this._transport);
@@ -481,6 +543,7 @@ final class SettingsApi {
     int? searchPageSize,
     int? bioMaxLength,
     bool? profileViewingEnabled,
+    bool? pushEnabled,
   }) async =>
       Settings.fromJson(
           _object(await _transport.request('PATCH', '/v1/settings',
@@ -497,5 +560,6 @@ final class SettingsApi {
                 'search_page_size': searchPageSize,
                 'bio_max_length': bioMaxLength,
                 'profile_viewing_enabled': profileViewingEnabled,
+                'push_enabled': pushEnabled,
               }))));
 }

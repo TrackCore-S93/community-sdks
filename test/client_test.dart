@@ -462,8 +462,44 @@ void main() {
     expect((await c.settings.get()).feedMode, FeedMode.unknown);
   });
 
+  test('push: a phone is registered, and signing out unregisters it', () async {
+    const token = 'fcm-token:abc';
+    final adapter = FakeAdapter([
+      session(),
+      json(200, {'provider': 'fcm', 'platform': 'android', 'registered': true}),
+      json(200, {'enabled': true, 'community_enabled': true, 'devices': 1}),
+      json(200, {'enabled': false, 'community_enabled': true, 'devices': 1}),
+      json(200, {'removed': true}),
+      json(204, null),
+    ]);
+    final c = CommunityClient.publishable(
+        apiKey: publishableKey, baseUrl: base, httpAdapter: adapter);
+    await c.initialize('ali');
+    await expectLater(
+        c.push.register(''), throwsA(isA<CommunityValidationException>()));
+    final device = await c.push.register(token, platform: PushPlatform.android);
+    expect(device.provider, PushProvider.fcm);
+    expect(device.platform, PushPlatform.android);
+    expect('${adapter.calls[1].method} ${adapter.calls[1].path}',
+        'PUT /v1/push/devices');
+    expect(adapter.calls[1].json, {'token': token, 'platform': 'android'});
+    expect(c.push.registeredToken, token);
+    expect((await c.push.preference()).devices, 1);
+    expect((await c.push.setEnabled(false)).enabled, isFalse);
+    expect(adapter.calls[3].json, {'enabled': false});
+    // Signing out forgets the phone first, while the session still works.
+    await c.signOut();
+    expect('${adapter.calls[4].method} ${adapter.calls[4].path}',
+        'POST /v1/push/devices/unregister');
+    expect(adapter.calls[4].json, {'token': token});
+    expect(adapter.calls[4].headers['X-Community-Session'], sessionToken);
+    expect(adapter.calls[5].method, 'DELETE');
+    expect(c.push.registeredToken, isNull);
+    expect(c.sessionToken, isNull);
+  });
+
   test('the SDK has a call for every route in the contract', () {
-    expect(operations, hasLength(48));
+    expect(operations, hasLength(52));
     expect(operations.map((o) => o.sdk).toSet(), implemented);
   });
 
@@ -579,6 +615,7 @@ const Map<String, Object?> settingsJson = {
   'search_page_size': 10,
   'bio_max_length': 300,
   'profile_viewing_enabled': true,
+  'push_enabled': true,
   'max_image_upload_bytes': 10485760,
   'image_uploads_enabled': true,
 };
@@ -631,6 +668,10 @@ const Set<String> implemented = {
   'notifications.unreadCount',
   'notifications.markAllRead',
   'notifications.markRead',
+  'push.register',
+  'push.unregister',
+  'push.preference',
+  'push.setEnabled',
   'settings.get',
   'settings.update',
   'live.connect',

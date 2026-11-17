@@ -57,6 +57,7 @@ Dart 3.4 or later.
 | `blocks` | `list`, `block`, `unblock` |
 | `reports` | `reportPost`, `reportComment`, `list` |
 | `notifications` | `list`, `unreadCount`, `markRead`, `markAllRead` |
+| `push` | `register`, `unregister`, `preference`, `setEnabled` |
 | `settings` | `get`, `update` |
 | `members` | `list`, `setRole` |
 | `auth` | `createSession`, `endSession` |

@@ -29,6 +29,7 @@ final class CommunityClient {
         blocks = BlocksApi(_transport),
         reports = ReportsApi(_transport),
         notifications = NotificationsApi(_transport),
+        push = PushApi(_transport),
         settings = SettingsApi(_transport),
         live = LiveApi(_transport, liveSocket);
 
@@ -148,6 +149,9 @@ final class CommunityClient {
   /// Notifications.
   final NotificationsApi notifications;
 
+  /// Push notifications to the phone.
+  final PushApi push;
+
   /// The creator's settings.
   final SettingsApi settings;
 
@@ -160,9 +164,20 @@ final class CommunityClient {
   Future<void> initialize(String externalId) =>
       _transport.initialize(externalId);
 
-  /// Signs the user out: ends the session where there is one, and forgets
-  /// the user.
-  Future<void> signOut() => _transport.signOut();
+  /// Signs the user out: unregisters the phone from push, ends the session
+  /// where there is one, and forgets the user.
+  Future<void> signOut() async {
+    // A phone registered for push must stop getting this user's
+    // notifications. A failure here must not keep the user signed in.
+    if (push.registeredToken != null) {
+      try {
+        await push.unregister();
+      } on Object {
+        // The server forgets the token when the next user registers it.
+      }
+    }
+    await _transport.signOut();
+  }
 
   /// Names the user every later request acts for. For a server.
   void setUser(String externalId) => _transport.setUser(externalId);
@@ -318,6 +333,9 @@ final class Community {
 
   /// Notifications.
   NotificationsApi get notifications => client.notifications;
+
+  /// Push notifications to the phone.
+  PushApi get push => client.push;
 
   /// The creator's settings.
   SettingsApi get settings => client.settings;

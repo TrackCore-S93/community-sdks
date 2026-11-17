@@ -195,6 +195,30 @@ const List<OperationSpec> operations = [
     path: '/v1/media/{media_id}',
     auth: 'member'
   ),
+  (
+    sdk: 'push.register',
+    method: 'PUT',
+    path: '/v1/push/devices',
+    auth: 'member'
+  ),
+  (
+    sdk: 'push.unregister',
+    method: 'POST',
+    path: '/v1/push/devices/unregister',
+    auth: 'member'
+  ),
+  (
+    sdk: 'push.preference',
+    method: 'GET',
+    path: '/v1/push/preferences',
+    auth: 'member'
+  ),
+  (
+    sdk: 'push.setEnabled',
+    method: 'PUT',
+    path: '/v1/push/preferences',
+    auth: 'member'
+  ),
   (sdk: 'blocks.list', method: 'GET', path: '/v1/blocks', auth: 'member'),
   (
     sdk: 'blocks.block',

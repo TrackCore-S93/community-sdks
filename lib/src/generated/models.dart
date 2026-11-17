@@ -1314,6 +1314,7 @@ final class Settings {
     required this.searchPageSize,
     required this.bioMaxLength,
     required this.profileViewingEnabled,
+    required this.pushEnabled,
     required this.maxImageUploadBytes,
     required this.imageUploadsEnabled,
     this.removedByThreshold,
@@ -1333,6 +1334,7 @@ final class Settings {
         searchPageSize: (json['search_page_size'] as num).toInt(),
         bioMaxLength: (json['bio_max_length'] as num).toInt(),
         profileViewingEnabled: json['profile_viewing_enabled'] as bool,
+        pushEnabled: json['push_enabled'] as bool,
         maxImageUploadBytes: (json['max_image_upload_bytes'] as num).toInt(),
         imageUploadsEnabled: json['image_uploads_enabled'] as bool,
         removedByThreshold: json['removed_by_threshold'] == null
@@ -1374,6 +1376,9 @@ final class Settings {
   /// Members may open each other's profiles.
   final bool profileViewingEnabled;
 
+  /// Notifications are also sent to members' phones.
+  final bool pushEnabled;
+
   /// The largest image upload, in bytes. Fixed, not a creator setting.
   final int maxImageUploadBytes;
 
@@ -1404,6 +1409,114 @@ final class RemovedByThreshold {
 
   /// Comments deleted.
   final int comments;
+}
+
+/// A registered phone.
+final class PushDevice {
+  /// Builds a [PushDevice]. Normally it comes from the API.
+  const PushDevice({
+    required this.provider,
+    this.platform,
+    required this.registered,
+  });
+
+  /// Reads a [PushDevice] from the API's JSON.
+  factory PushDevice.fromJson(Map<String, Object?> json) => PushDevice(
+        provider: PushProvider.fromWire(json['provider'] as String?),
+        platform: json['platform'] == null
+            ? null
+            : PushPlatform.fromWire(json['platform'] as String?),
+        registered: json['registered'] as bool,
+      );
+
+  /// The service the token belongs to.
+  final PushProvider provider;
+
+  /// What the app said it runs on; null when it did not say.
+  final PushPlatform? platform;
+
+  /// Always true.
+  final bool registered;
+}
+
+/// The result of forgetting a phone.
+final class PushUnregistered {
+  /// Builds a [PushUnregistered]. Normally it comes from the API.
+  const PushUnregistered({
+    required this.removed,
+  });
+
+  /// Reads a [PushUnregistered] from the API's JSON.
+  factory PushUnregistered.fromJson(Map<String, Object?> json) =>
+      PushUnregistered(
+        removed: json['removed'] as bool,
+      );
+
+  /// False when the token was not registered for this user.
+  final bool removed;
+}
+
+/// The user's push switch.
+final class PushPreference {
+  /// Builds a [PushPreference]. Normally it comes from the API.
+  const PushPreference({
+    required this.enabled,
+    required this.communityEnabled,
+    required this.devices,
+  });
+
+  /// Reads a [PushPreference] from the API's JSON.
+  factory PushPreference.fromJson(Map<String, Object?> json) => PushPreference(
+        enabled: json['enabled'] as bool,
+        communityEnabled: json['community_enabled'] as bool,
+        devices: (json['devices'] as num).toInt(),
+      );
+
+  /// The user's own choice.
+  final bool enabled;
+
+  /// The creator's switch. Push arrives only when both are on.
+  final bool communityEnabled;
+
+  /// How many phones the user has registered.
+  final int devices;
+}
+
+/// The push service a token belongs to.
+enum PushProvider {
+  expo('expo'),
+  fcm('fcm'),
+
+  /// A value this version of the SDK does not know. The API may add values.
+  unknown('');
+
+  const PushProvider(this.wire);
+
+  /// The value as the API sends and accepts it.
+  final String wire;
+
+  /// The member for a value from the API, or [unknown].
+  static PushProvider fromWire(String? value) => values
+      .firstWhere((e) => e.wire == value, orElse: () => PushProvider.unknown);
+}
+
+/// What the app runs on.
+enum PushPlatform {
+  ios('ios'),
+  android('android'),
+  web('web'),
+
+  /// A value this version of the SDK does not know. The API may add values.
+  unknown('');
+
+  const PushPlatform(this.wire);
+
+  /// The value as the API sends and accepts it.
+  final String wire;
+
+  /// The member for a value from the API, or [unknown].
+  static PushPlatform fromWire(String? value) => values
+      .firstWhere((e) => e.wire == value, orElse: () => PushPlatform.unknown);
 }
 
 /// One message on the live connection.
