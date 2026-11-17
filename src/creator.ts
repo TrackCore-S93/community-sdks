@@ -6,6 +6,7 @@ import {
   type CommunityOptions,
   type MembersAPI,
   type PostsAPI,
+  type ArchiveAPI,
   type ReportsAPI,
   type SettingsAPI,
   type TopicsAPI,
@@ -33,7 +34,8 @@ const SECRET_KEY = /^cm_sk_/;
 /**
  * The creator's client for React Native and Expo: everything a creator's own
  * app (a CMS) does to run the community. Settings, topics, members and roles,
- * pinning, reports, deleting any post or comment, and erasing a user.
+ * pinning, reports, the moderation archive, deleting any post or comment,
+ * and erasing a user.
  *
  * It takes the creator's SECRET key, which controls the whole community. So
  * it belongs only in an app that is given to the creator and nobody else,
@@ -100,6 +102,11 @@ export class CommunityCreator {
   get comments(): Pick<CommentsAPI, "list" | "replies" | "delete"> { return this.#core.comments; }
   /** The reports members have made. */
   get reports(): Pick<ReportsAPI, "list"> { return this.#core.reports; }
+  /**
+   * The moderation archive: posts and comments that reports removed from the
+   * community. They are kept, not deleted.
+   */
+  get archive(): ArchiveAPI { return this.#core.archive; }
   /** Erasing an end user. */
   get users(): UsersAPI { return this.#core.users; }
 

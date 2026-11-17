@@ -81,7 +81,7 @@ classes, `isErrorOfCode`, `applyReaction` and every type.
 
 ## The creator's client
 
-For an app that is given to the creator and nobody else (a CMS), there is a second entry with the calls that run the community: settings, topics, members and roles, pinning, reports, deleting any post or comment, and erasing a user.
+For an app that is given to the creator and nobody else (a CMS), there is a second entry with the calls that run the community: settings, topics, members and roles, pinning, reports, the moderation archive (`creator.archive.list()` and `creator.archive.get(id)`: what reports removed, kept and not deleted), deleting any post or comment, and erasing a user.
 
 ```ts
 import { createCreatorClient } from "@trackcore/community-react-native/creator";

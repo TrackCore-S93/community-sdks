@@ -191,6 +191,7 @@ test("creator: settings, topics, roles, pins, reports and erasing a user are sen
     json(200, { feed_page_size: 30 }), json(201, { id: "cm_top_1", name: "Workout" }), json(200, { external_id: "u1", role: "coach" }),
     json(200, { id: "cm_post_1", is_pinned: true }), json(200, { reports: [], report_threshold: 5 }), json(200, { external_id: "u1", deleted: true }),
     json(200, { members: [], total: 0, next_cursor: null }), json(200, { id: "cm_post_1", deleted: true }),
+    json(200, { archived: [{ id: "cm_arc_1" }], next_cursor: null }), json(200, { id: "cm_arc_1", body: "spam" }),
   ]);
   const c = creator.createCreatorClient({ apiKey: SECRET, baseUrl: base, fetch: f.fetch, ...stated });
   assert.equal((await c.settings.update({ feedPageSize: 30 })).feed_page_size, 30);
@@ -201,9 +202,12 @@ test("creator: settings, topics, roles, pins, reports and erasing a user are sen
   await c.users.delete("u1");
   await c.members.list({ q: "an" });
   await c.posts.delete("cm_post_1");
+  assert.equal((await c.archive.list({ limit: 10 })).archived[0].id, "cm_arc_1");
+  assert.equal((await c.archive.get("cm_arc_1")).body, "spam");
   assert.deepEqual(f.calls.map((x) => `${x.method} ${x.url.replace(base, "")}`), [
     "PATCH /v1/settings", "POST /v1/topics", "PATCH /v1/community/members/u1", "PUT /v1/posts/cm_post_1/pin",
     "GET /v1/reports", "DELETE /v1/users/u1", "GET /v1/community/members?q=an", "DELETE /v1/posts/cm_post_1",
+    "GET /v1/moderation/archive?limit=10", "GET /v1/moderation/archive/cm_arc_1",
   ]);
   for (const call of f.calls) {
     assert.equal(call.headers.Authorization, "Bearer " + SECRET);
