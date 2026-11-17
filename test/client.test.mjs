@@ -188,13 +188,13 @@ test("creator: the client needs a secret key and the statement about where it co
 
 test("creator: settings, topics, roles, pins, reports and erasing a user are sent with the secret key and no user", async () => {
   const f = fakeFetch([
-    json(200, { feed_page_size: 30 }), json(201, { id: "cm_top_1", name: "Workout" }), json(200, { external_id: "u1", role: "coach" }),
+    json(200, { search_page_size: 20 }), json(201, { id: "cm_top_1", name: "Workout" }), json(200, { external_id: "u1", role: "coach" }),
     json(200, { id: "cm_post_1", is_pinned: true }), json(200, { reports: [], report_threshold: 5 }), json(200, { external_id: "u1", deleted: true }),
     json(200, { members: [], total: 0, next_cursor: null }), json(200, { id: "cm_post_1", deleted: true }),
     json(200, { archived: [{ id: "cm_arc_1" }], next_cursor: null }), json(200, { id: "cm_arc_1", body: "spam" }),
   ]);
   const c = creator.createCreatorClient({ apiKey: SECRET, baseUrl: base, fetch: f.fetch, ...stated });
-  assert.equal((await c.settings.update({ feedPageSize: 30 })).feed_page_size, 30);
+  assert.equal((await c.settings.update({ searchPageSize: 20 })).search_page_size, 20);
   await c.topics.create({ name: "Workout" });
   await c.members.setRole("u1", "coach");
   await c.posts.pin("cm_post_1");

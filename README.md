@@ -91,7 +91,7 @@ const creator = createCreatorClient({
   secretKeyIsEnteredByTheCreatorAndNotBuiltIntoTheApp: true,
 });
 
-await creator.settings.update({ feedPageSize: 30 });
+await creator.settings.update({ searchPageSize: 20 });
 ```
 
 It takes the creator's **secret key**, which controls the whole community. The key must be entered by the creator while the app runs and kept in the device's secure storage. It must never be written in the app's code or config: anything built into an app can be read by whoever holds the app file. The members' client, `Community`, still refuses a secret key.
