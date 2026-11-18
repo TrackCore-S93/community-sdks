@@ -566,7 +566,6 @@ final class SettingsApi {
   /// Changes settings. Pass only what changes. Secret key only.
   Future<Settings> update({
     int? maxImagesPerPost,
-    ImageSize? imageSize,
     ReactionOrder? reactionOrder,
     bool? commentRepliesEnabled,
     FeedMode? feedMode,
@@ -582,7 +581,6 @@ final class SettingsApi {
               repeatable: true,
               body: _given({
                 'max_images_per_post': maxImagesPerPost,
-                'image_size': imageSize?.wire,
                 'reaction_order': reactionOrder?.wire,
                 'comment_replies_enabled': commentRepliesEnabled,
                 'feed_mode': feedMode?.wire,

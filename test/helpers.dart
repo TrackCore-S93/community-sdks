@@ -119,7 +119,10 @@ const Map<String, Object?> postJson = {
       'id': 'cm_med_1',
       'url': 'https://storage.test/1',
       'width': 1024,
-      'height': 768
+      'height': 768,
+      'small_url': 'https://storage.test/1_512',
+      'small_width': 512,
+      'small_height': 384,
     },
   ],
   'reactions': [

@@ -450,6 +450,9 @@ void main() {
     expect(post.id, 'cm_post_1');
     expect(post.author.role, Role.coach);
     expect(post.images.single.width, 1024);
+    expect(post.images.single.smallUrl, 'https://storage.test/1_512');
+    expect(post.images.single.smallWidth, 512);
+    expect(post.images.single.smallHeight, 384);
     expect(post.reactions.single.reactedByMe, isFalse);
     expect(post.pinnedAt, DateTime.utc(2026, 11, 16, 10));
     expect(post.createdAt.microsecond, 456);
@@ -457,8 +460,6 @@ void main() {
     expect(feed.nextCursor, isNull);
     expect(feed.newestCursor, 'abc');
     final settings = await c.settings.get();
-    expect(settings.imageSize, ImageSize.size1024);
-    expect(settings.imageMaxDimension, 1024);
     expect(settings.removedByThreshold, isNull);
     // A value newer than the SDK does not break reading.
     expect((await c.settings.get()).feedMode, FeedMode.unknown);
@@ -704,8 +705,6 @@ void main() {
 
 const Map<String, Object?> settingsJson = {
   'max_images_per_post': 3,
-  'image_size': '1024',
-  'image_max_dimension': 1024,
   'reaction_order': 'most_used',
   'comment_replies_enabled': false,
   'feed_mode': 'infinite_scroll',

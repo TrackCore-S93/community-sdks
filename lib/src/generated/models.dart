@@ -511,7 +511,7 @@ final class Author {
   final Role role;
 }
 
-/// One picture on a post or comment.
+/// One picture on a post or comment. Every image is stored in two sizes: a large one for a post opened on its own screen, and a small one for the feed.
 final class CommunityImage {
   /// Builds a [CommunityImage]. Normally it comes from the API.
   const CommunityImage({
@@ -519,6 +519,9 @@ final class CommunityImage {
     required this.url,
     required this.width,
     required this.height,
+    required this.smallUrl,
+    required this.smallWidth,
+    required this.smallHeight,
   });
 
   /// Reads a [CommunityImage] from the API's JSON.
@@ -527,19 +530,31 @@ final class CommunityImage {
         url: json['url'] as String,
         width: (json['width'] as num).toInt(),
         height: (json['height'] as num).toInt(),
+        smallUrl: json['small_url'] as String,
+        smallWidth: (json['small_width'] as num).toInt(),
+        smallHeight: (json['small_height'] as num).toInt(),
       );
 
   /// The image's id.
   final String id;
 
-  /// A short-lived link to the image.
+  /// A short-lived link to the large size: longest side at most 1024 pixels.
   final String url;
 
-  /// Width in pixels.
+  /// Width of the large size, in pixels.
   final int width;
 
-  /// Height in pixels.
+  /// Height of the large size, in pixels.
   final int height;
+
+  /// A short-lived link to the small size: longest side at most 512 pixels. For an image uploaded before two sizes were stored, or one already 512 pixels or less, this is the same picture as `url`.
+  final String smallUrl;
+
+  /// Width of the small size, in pixels.
+  final int smallWidth;
+
+  /// Height of the small size, in pixels.
+  final int smallHeight;
 }
 
 /// One emoji on a post or comment.
@@ -940,6 +955,9 @@ final class Media {
     this.width,
     this.height,
     this.bytes,
+    this.smallUrl,
+    this.smallWidth,
+    this.smallHeight,
     required this.attached,
   });
 
@@ -951,6 +969,9 @@ final class Media {
         width: (json['width'] as num?)?.toInt(),
         height: (json['height'] as num?)?.toInt(),
         bytes: (json['bytes'] as num?)?.toInt(),
+        smallUrl: json['small_url'] as String?,
+        smallWidth: (json['small_width'] as num?)?.toInt(),
+        smallHeight: (json['small_height'] as num?)?.toInt(),
         attached: json['attached'] as bool,
       );
 
@@ -960,17 +981,26 @@ final class Media {
   /// `pending`, `ready` or `failed`.
   final MediaStatus status;
 
-  /// A short-lived link, once ready.
+  /// A short-lived link to the large size (longest side at most 1024 pixels), once ready.
   final String? url;
 
-  /// Width in pixels, once ready.
+  /// Width of the large size in pixels, once ready.
   final int? width;
 
-  /// Height in pixels, once ready.
+  /// Height of the large size in pixels, once ready.
   final int? height;
 
-  /// Size of the stored file, once ready.
+  /// Size of the stored large file, once ready.
   final int? bytes;
+
+  /// A short-lived link to the small size (longest side at most 512 pixels), once ready.
+  final String? smallUrl;
+
+  /// Width of the small size in pixels, once ready.
+  final int? smallWidth;
+
+  /// Height of the small size in pixels, once ready.
+  final int? smallHeight;
 
   /// True once the image is on a post, a comment or a profile.
   final bool attached;
@@ -1496,8 +1526,6 @@ final class Settings {
   /// Builds a [Settings]. Normally it comes from the API.
   const Settings({
     required this.maxImagesPerPost,
-    required this.imageSize,
-    this.imageMaxDimension,
     required this.reactionOrder,
     required this.commentRepliesEnabled,
     required this.feedMode,
@@ -1514,8 +1542,6 @@ final class Settings {
   /// Reads a [Settings] from the API's JSON.
   factory Settings.fromJson(Map<String, Object?> json) => Settings(
         maxImagesPerPost: (json['max_images_per_post'] as num).toInt(),
-        imageSize: ImageSize.fromWire(json['image_size'] as String?),
-        imageMaxDimension: (json['image_max_dimension'] as num?)?.toInt(),
         reactionOrder:
             ReactionOrder.fromWire(json['reaction_order'] as String?),
         commentRepliesEnabled: json['comment_replies_enabled'] as bool,
@@ -1535,12 +1561,6 @@ final class Settings {
 
   /// Images one post may carry, 0 to 10. 0 turns images off.
   final int maxImagesPerPost;
-
-  /// The size uploaded images are stored at.
-  final ImageSize imageSize;
-
-  /// `image_size` as a number of pixels, or null for `original`.
-  final int? imageMaxDimension;
 
   /// The order reaction chips are shown in.
   final ReactionOrder reactionOrder;
@@ -1825,26 +1845,6 @@ enum FeedMode {
   /// The member for a value from the API, or [unknown].
   static FeedMode fromWire(String? value) =>
       values.firstWhere((e) => e.wire == value, orElse: () => FeedMode.unknown);
-}
-
-/// The size uploaded images are stored at. `thumbnail` is 256 pixels.
-enum ImageSize {
-  original('original'),
-  size1024('1024'),
-  size512('512'),
-  thumbnail('thumbnail'),
-
-  /// A value this version of the SDK does not know. The API may add values.
-  unknown('');
-
-  const ImageSize(this.wire);
-
-  /// The value as the API sends and accepts it.
-  final String wire;
-
-  /// The member for a value from the API, or [unknown].
-  static ImageSize fromWire(String? value) => values
-      .firstWhere((e) => e.wire == value, orElse: () => ImageSize.unknown);
 }
 
 /// The order reaction chips are shown in.
