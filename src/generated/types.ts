@@ -262,16 +262,22 @@ export interface Author {
   role: Role;
 }
 
-/** One picture on a post or comment. */
+/** One picture on a post or comment. Every image is stored in two sizes: a large one for a post opened on its own screen, and a small one for the feed. */
 export interface Image {
   /** The image's id. */
   id: string;
-  /** A short-lived link to the image. */
+  /** A short-lived link to the large size: longest side at most 1024 pixels. */
   url: string;
-  /** Width in pixels. */
+  /** Width of the large size, in pixels. */
   width: number;
-  /** Height in pixels. */
+  /** Height of the large size, in pixels. */
   height: number;
+  /** A short-lived link to the small size: longest side at most 512 pixels. For an image uploaded before two sizes were stored, or one already 512 pixels or less, this is the same picture as `url`. */
+  small_url: string;
+  /** Width of the small size, in pixels. */
+  small_width: number;
+  /** Height of the small size, in pixels. */
+  small_height: number;
 }
 
 /** One emoji on a post or comment. */
@@ -440,14 +446,20 @@ export interface Media {
   id: string;
   /** `pending`, `ready` or `failed`. */
   status: MediaStatus;
-  /** A short-lived link, once ready. */
+  /** A short-lived link to the large size (longest side at most 1024 pixels), once ready. */
   url: string | null;
-  /** Width in pixels, once ready. */
+  /** Width of the large size in pixels, once ready. */
   width: number | null;
-  /** Height in pixels, once ready. */
+  /** Height of the large size in pixels, once ready. */
   height: number | null;
-  /** Size of the stored file, once ready. */
+  /** Size of the stored large file, once ready. */
   bytes: number | null;
+  /** A short-lived link to the small size (longest side at most 512 pixels), once ready. */
+  small_url: string | null;
+  /** Width of the small size in pixels, once ready. */
+  small_width: number | null;
+  /** Height of the small size in pixels, once ready. */
+  small_height: number | null;
   /** True once the image is on a post, a comment or a profile. */
   attached: boolean;
 }
@@ -652,10 +664,6 @@ export interface NotificationRead {
 export interface Settings {
   /** Images one post may carry, 0 to 10. 0 turns images off. */
   max_images_per_post: number;
-  /** The size uploaded images are stored at. */
-  image_size: ImageSize;
-  /** `image_size` as a number of pixels, or null for `original`. */
-  image_max_dimension: number | null;
   /** The order reaction chips are shown in. */
   reaction_order: ReactionOrder;
   /** Members may reply to comments. */
@@ -692,8 +700,6 @@ export interface RemovedByThreshold {
 export interface UpdateSettingsRequest {
   /** 0 to 10. */
   max_images_per_post?: number | null;
-  /** `original`, `1024`, `512` or `thumbnail`. */
-  image_size?: ImageSize | null;
   /** `most_used` or `first_added`. */
   reaction_order?: ReactionOrder | null;
   /** Whether members may reply to comments. */
@@ -801,9 +807,6 @@ export type Role = "user" | "coach" | "creator";
 
 /** How the app presents the feed. */
 export type FeedMode = "infinite_scroll" | "pages";
-
-/** The size uploaded images are stored at. `thumbnail` is 256 pixels. */
-export type ImageSize = "original" | "1024" | "512" | "thumbnail";
 
 /** The order reaction chips are shown in. */
 export type ReactionOrder = "most_used" | "first_added";

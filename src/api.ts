@@ -469,7 +469,6 @@ export class PushAPI extends Namespace {
 /** What the creator can change. */
 export interface UpdateSettingsParams extends CallOptions {
   maxImagesPerPost?: number;
-  imageSize?: T.ImageSize;
   reactionOrder?: T.ReactionOrder;
   commentRepliesEnabled?: boolean;
   feedMode?: T.FeedMode;
@@ -495,7 +494,7 @@ export class SettingsAPI extends Namespace {
       // Setting the same values twice changes nothing, so a retry is safe.
       repeatable: true,
       body: {
-        max_images_per_post: changes.maxImagesPerPost, image_size: changes.imageSize,
+        max_images_per_post: changes.maxImagesPerPost,
         reaction_order: changes.reactionOrder, comment_replies_enabled: changes.commentRepliesEnabled,
         feed_mode: changes.feedMode, report_threshold: changes.reportThreshold,
         search_page_size: changes.searchPageSize, bio_max_length: changes.bioMaxLength,

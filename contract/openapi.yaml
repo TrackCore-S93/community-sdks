@@ -2527,7 +2527,7 @@ paths:
       operationId: completeUpload
       tags: [Media]
       summary: "Finish an image upload"
-      description: "Step 3 of 3. The server checks the file, resizes it to the creator's size and stores it as JPEG. The image can then be put on a post, a comment or a profile.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      description: "Step 3 of 3. The server checks the file and stores it as JPEG in two sizes: longest side 1024 pixels and 512 pixels. The image can then be put on a post, a comment or a profile.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
       x-community-auth: member
       x-community-sdk: media.complete
       parameters:
@@ -4608,9 +4608,9 @@ components:
             - $ref: '#/components/schemas/Role'
     Image:
       type: object
-      description: "One picture on a post or comment."
+      description: "One picture on a post or comment. Every image is stored in two sizes: a large one for a post opened on its own screen, and a small one for the feed."
       x-go-type: httpx.imageBody
-      required: [id, url, width, height]
+      required: [id, url, width, height, small_url, small_width, small_height]
       properties:
         id:
           type: string
@@ -4618,15 +4618,26 @@ components:
           example: "cm_med_…"
         url:
           type: string
-          description: "A short-lived link to the image."
+          description: "A short-lived link to the large size: longest side at most 1024 pixels."
         width:
           type: integer
-          description: "Width in pixels."
+          description: "Width of the large size, in pixels."
           example: 1024
         height:
           type: integer
-          description: "Height in pixels."
+          description: "Height of the large size, in pixels."
           example: 768
+        small_url:
+          type: string
+          description: "A short-lived link to the small size: longest side at most 512 pixels. For an image uploaded before two sizes were stored, or one already 512 pixels or less, this is the same picture as `url`."
+        small_width:
+          type: integer
+          description: "Width of the small size, in pixels."
+          example: 512
+        small_height:
+          type: integer
+          description: "Height of the small size, in pixels."
+          example: 384
     Reaction:
       type: object
       description: "One emoji on a post or comment."
@@ -4930,7 +4941,7 @@ components:
       type: object
       description: "One uploaded image."
       x-go-type: httpx.mediaBody
-      required: [id, status, url, width, height, bytes, attached]
+      required: [id, status, url, width, height, bytes, small_url, small_width, small_height, attached]
       properties:
         id:
           type: string
@@ -4942,19 +4953,30 @@ components:
             - $ref: '#/components/schemas/MediaStatus'
         url:
           type: [string, 'null']
-          description: "A short-lived link, once ready."
+          description: "A short-lived link to the large size (longest side at most 1024 pixels), once ready."
         width:
           type: [integer, 'null']
-          description: "Width in pixels, once ready."
+          description: "Width of the large size in pixels, once ready."
           example: 1024
         height:
           type: [integer, 'null']
-          description: "Height in pixels, once ready."
+          description: "Height of the large size in pixels, once ready."
           example: 768
         bytes:
           type: [integer, 'null']
-          description: "Size of the stored file, once ready."
+          description: "Size of the stored large file, once ready."
           example: 182044
+        small_url:
+          type: [string, 'null']
+          description: "A short-lived link to the small size (longest side at most 512 pixels), once ready."
+        small_width:
+          type: [integer, 'null']
+          description: "Width of the small size in pixels, once ready."
+          example: 512
+        small_height:
+          type: [integer, 'null']
+          description: "Height of the small size in pixels, once ready."
+          example: 384
         attached:
           type: boolean
           description: "True once the image is on a post, a comment or a profile."
@@ -5321,20 +5343,12 @@ components:
       type: object
       description: "What the creator has chosen for the community."
       x-go-type: httpx.settingsBody
-      required: [max_images_per_post, image_size, image_max_dimension, reaction_order, comment_replies_enabled, feed_mode, report_threshold, search_page_size, bio_max_length, profile_viewing_enabled, push_enabled, max_image_upload_bytes, image_uploads_enabled]
+      required: [max_images_per_post, reaction_order, comment_replies_enabled, feed_mode, report_threshold, search_page_size, bio_max_length, profile_viewing_enabled, push_enabled, max_image_upload_bytes, image_uploads_enabled]
       properties:
         max_images_per_post:
           type: integer
           description: "Images one post may carry, 0 to 10. 0 turns images off."
           example: 3
-        image_size:
-          description: "The size uploaded images are stored at."
-          allOf:
-            - $ref: '#/components/schemas/ImageSize'
-        image_max_dimension:
-          type: [integer, 'null']
-          description: "`image_size` as a number of pixels, or null for `original`."
-          example: 1024
         reaction_order:
           description: "The order reaction chips are shown in."
           allOf:
@@ -5402,11 +5416,6 @@ components:
           type: [integer, 'null']
           description: "0 to 10."
           example: 3
-        image_size:
-          anyOf:
-            - $ref: '#/components/schemas/ImageSize'
-            - type: 'null'
-          description: "`original`, `1024`, `512` or `thumbnail`."
         reaction_order:
           anyOf:
             - $ref: '#/components/schemas/ReactionOrder'
@@ -5595,10 +5604,6 @@ components:
       type: string
       description: "How the app presents the feed."
       enum: ["infinite_scroll", "pages"]
-    ImageSize:
-      type: string
-      description: "The size uploaded images are stored at. `thumbnail` is 256 pixels."
-      enum: ["original", "1024", "512", "thumbnail"]
     ReactionOrder:
       type: string
       description: "The order reaction chips are shown in."

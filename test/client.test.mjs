@@ -434,3 +434,14 @@ test("a profile carries the member's post and comment counts", async () => {
   assert.equal(other.posts_count, 12);
   assert.equal(other.comments_count, 48);
 });
+
+test("an image comes in two sizes: large for the post, small for the feed", async () => {
+  const image = { id: "cm_med_1", url: "https://img/1.jpg", width: 1024, height: 768, small_url: "https://img/1_512.jpg", small_width: 512, small_height: 384 };
+  const f = fakeFetch([session(), json(200, { id: "cm_post_1", images: [image] })]);
+  const c = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch: f.fetch });
+  await c.initialize("ali");
+  const post = await c.posts.get("cm_post_1");
+  assert.equal(post.images[0].url, "https://img/1.jpg");
+  assert.equal(post.images[0].small_url, "https://img/1_512.jpg");
+  assert.equal(post.images[0].small_width, 512);
+});
