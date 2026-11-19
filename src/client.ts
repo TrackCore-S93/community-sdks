@@ -42,7 +42,7 @@ export class Community {
 
   get #ready(): { transport: Transport; apis: ReturnType<typeof buildAPIs> } {
     if (!this.#transport || !this.#apis) {
-      throw new ConfigurationError("not_configured", "The client is not configured. Call configure({ apiKey, baseUrl }) first.");
+      throw new ConfigurationError("not_configured", "The client is not configured. Call configure({ apiKey }) first.");
     }
     return { transport: this.#transport, apis: this.#apis };
   }
