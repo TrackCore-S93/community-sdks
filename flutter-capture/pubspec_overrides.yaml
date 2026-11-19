@@ -1,0 +1,6 @@
+# Inside this repository the add-on is built against the SDK beside it. An
+# app that depends on this package never reads this file: overrides apply
+# only to the package being worked on.
+dependency_overrides:
+  trackcore_community:
+    path: ../flutter

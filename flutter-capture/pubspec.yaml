@@ -1,0 +1,29 @@
+name: trackcore_community_capture
+description: >-
+  Opens the camera or the gallery and uploads the picture to Community in one
+  call. An add-on to trackcore_community.
+version: 0.1.0
+repository: https://github.com/TrackCore-S93/community-sdks/tree/main/flutter-capture
+documentation: https://community.trackcore.app/developer/sdk/flutter/media
+publish_to: none
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  image_picker: ^1.1.0
+  trackcore_community:
+    git:
+      url: https://github.com/TrackCore-S93/community-sdks.git
+      ref: flutter-v0.1.0
+      path: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  image_picker_platform_interface: ^2.10.0
+  plugin_platform_interface: ^2.1.0
+  lints: ^6.0.0

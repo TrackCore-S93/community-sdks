@@ -6,7 +6,9 @@ The client SDKs for the Community API, one folder each.
 |---|---|---|
 | [`typescript/`](typescript) | `@trackcore/community-sdk` | A backend (secret key) or a browser (publishable key) |
 | [`react-native/`](react-native) | `@trackcore/community-react-native` | A React Native or Expo app |
+| [`react-native-capture/`](react-native-capture) | `@trackcore/community-react-native-capture` | Add-on: opens the camera or gallery and uploads, in one call |
 | [`flutter/`](flutter) | `trackcore_community` | A Flutter or Dart app |
+| [`flutter-capture/`](flutter-capture) | `trackcore_community_capture` | Add-on: opens the camera or gallery and uploads, in one call |
 
 Each folder is a complete package with its own readme, tests and licence.
 Documentation: https://community.trackcore.app/developer/
@@ -34,19 +36,21 @@ dependencies:
 
 ## Releases
 
-One tag per SDK and version: `typescript-v0.1.0`, `react-native-v0.1.0`,
-`flutter-v0.1.0`. The two npm packages are attached to their release as the
+One tag per package and version: `typescript-v0.1.0`, `react-native-v0.1.0`,
+`react-native-capture-v0.1.0`, `flutter-v0.1.0`, `flutter-capture-v0.1.0`. The two npm packages are attached to their release as the
 file `npm pack` produces.
 
 ## Developing
 
 React Native is built on the TypeScript SDK and tests against its tarball,
-so build that first:
+and its capture add-on tests against both, so build them in this order:
 
 ```sh
 cd typescript && npm install && npm test && npm pack
-cd ../react-native && npm install && npm test
+cd ../react-native && npm install && npm test && npm pack
+cd ../react-native-capture && npm install && npm test
 cd ../flutter && flutter pub get && flutter analyze && flutter test
+cd ../flutter-capture && flutter pub get && flutter analyze && flutter test
 ```
 
 All three are generated from the same API contract. Each keeps its own copy

@@ -1,0 +1,6 @@
+{
+  "main": "../dist/cjs/core.js",
+  "module": "../dist/esm/core.js",
+  "react-native": "../dist/cjs/core.js",
+  "types": "../dist/cjs/core.d.ts"
+}

@@ -1,0 +1,43 @@
+{
+  "name": "@trackcore/community-react-native-capture",
+  "version": "0.1.0",
+  "description": "Opens the camera or the gallery and uploads the picture to Community in one call. An add-on to @trackcore/community-react-native.",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "react-native": "./dist/cjs/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": { "types": "./dist/esm/index.d.ts", "default": "./dist/esm/index.js" },
+      "require": { "types": "./dist/cjs/index.d.ts", "default": "./dist/cjs/index.js" }
+    },
+    "./core": {
+      "import": { "types": "./dist/esm/core.d.ts", "default": "./dist/esm/core.js" },
+      "require": { "types": "./dist/cjs/core.d.ts", "default": "./dist/cjs/core.js" }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "core", "README.md", "LICENSE"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "pack:release": "npm test && npm pack"
+  },
+  "peerDependencies": {
+    "@trackcore/community-react-native": ">=0.1.0 <0.2.0",
+    "expo-image-picker": ">=15.0.0"
+  },
+  "peerDependenciesMeta": {
+    "expo-image-picker": { "optional": true }
+  },
+  "devDependencies": {
+    "@trackcore/community-react-native": "file:../react-native/trackcore-community-react-native-0.1.0.tgz",
+    "@trackcore/community-sdk": "file:../typescript/trackcore-community-sdk-0.1.0.tgz",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}

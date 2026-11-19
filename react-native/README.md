@@ -105,8 +105,8 @@ await Community.instance.posts.create({ topicId, body, mediaIds: [image.id] });
 ```
 
 `uploadFile` reads the file, then asks for an upload link, sends the file and
-finishes. The optional capture package opens the camera or the gallery for
-you and calls this.
+finishes. The capture add-on in [`../react-native-capture`](../react-native-capture)
+opens the camera or the gallery for you and calls this.
 
 ## Live updates
 
