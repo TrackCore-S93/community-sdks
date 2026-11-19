@@ -87,7 +87,7 @@ publishable key they throw `CommunityConfigurationException`
 | Option | Default | Meaning |
 |---|---|---|
 | `apiKey` | required | `cm_pk_…` in an app |
-| `baseUrl` | `https://api.community.trackcore.app` | Where the API answers |
+| `baseUrl` | `https://api.community.trackcore.app` | Where the API answers. The same for every customer: leave it out |
 | `sessionTtlSeconds` | 86400 | How long a session minted by `initialize` lives, 60 to 86400 |
 | `timeout` | 10 s | One attempt |
 | `retryPolicy` | `CommunityRetryPolicy()` | Attempts, backoff and the deadline for the whole call |
