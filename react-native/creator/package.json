@@ -1,0 +1,6 @@
+{
+  "main": "../dist/cjs/creator.js",
+  "module": "../dist/esm/creator.js",
+  "react-native": "../dist/cjs/creator.js",
+  "types": "../dist/cjs/creator.d.ts"
+}
