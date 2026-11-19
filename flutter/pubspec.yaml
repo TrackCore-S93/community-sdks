@@ -4,7 +4,7 @@ description: >-
   Community API: topics, posts, comments, reactions, notifications and live
   updates. Pure Dart, zero dependencies.
 version: 0.1.0
-repository: https://github.com/TrackCore-S93/community-sdk-flutter
+repository: https://github.com/TrackCore-S93/community-sdks/tree/main/flutter
 documentation: https://community.trackcore.app/developer/sdk/flutter/
 publish_to: none
 

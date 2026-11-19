@@ -38,8 +38,9 @@ The package is not on pub.dev. Add it from git:
 dependencies:
   trackcore_community:
     git:
-      url: https://github.com/TrackCore-S93/community-sdk-flutter.git
-      ref: v0.1.0
+      url: https://github.com/TrackCore-S93/community-sdks.git
+      ref: flutter-v0.1.0
+      path: flutter
 ```
 
 Dart 3.4 or later.

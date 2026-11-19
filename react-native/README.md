@@ -2,7 +2,7 @@
 
 The Community client for React Native and Expo.
 
-It is built on the [JavaScript SDK](https://github.com/TrackCore-S93/community-sdk-js)
+It is built on the [TypeScript SDK](../typescript)
 and forks nothing from it: the request layer, the retry policy, the error
 classes and the models are the same objects, imported. Three things are
 specialised because a device forced them:
@@ -21,8 +21,8 @@ at runtime, works in Expo Go, and needs no rebuild to add.
 Neither package is on the npm registry. Install both from their releases:
 
 ```sh
-npm install https://github.com/TrackCore-S93/community-sdk-js/releases/download/v0.1.0/trackcore-community-sdk-0.1.0.tgz
-npm install https://github.com/TrackCore-S93/community-sdk-react-native/releases/download/v0.1.0/trackcore-community-react-native-0.1.0.tgz
+npm install https://github.com/TrackCore-S93/community-sdks/releases/download/typescript-v0.1.0/trackcore-community-sdk-0.1.0.tgz
+npm install https://github.com/TrackCore-S93/community-sdks/releases/download/react-native-v0.1.0/trackcore-community-react-native-0.1.0.tgz
 ```
 
 `bun add`, `pnpm add` and `yarn add` take the same two URLs.
@@ -136,8 +136,8 @@ not yet been run on a device.
 
 ## Developing
 
-Clone `community-sdk-js` beside this repository and build its tarball first
-(`npm pack` there): this package's dev dependency points at it.
+Build the TypeScript SDK's tarball first (`npm pack` in `../typescript`):
+this package's dev dependency points at it.
 
 ```sh
 npm install
