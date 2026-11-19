@@ -1,0 +1,35 @@
+{
+  "name": "@trackcore/community-sdk",
+  "version": "0.1.0",
+  "description": "A typed client for the Community API: topics, posts, comments, reactions, notifications and live updates.",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": { "types": "./dist/esm/index.d.ts", "default": "./dist/esm/index.js" },
+      "require": { "types": "./dist/cjs/index.d.ts", "default": "./dist/cjs/index.js" }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "contract/openapi.yaml", "README.md", "LICENSE"],
+  "sideEffects": false,
+  "engines": { "node": ">=18.17" },
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "generate:check": "node scripts/generate.mjs --check",
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "test:live": "npm run build && node --test test/live/live.test.mjs",
+    "prepare": "npm run build",
+    "pack:release": "npm run generate:check && npm test && npm pack"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0",
+    "yaml": "^2.6.0"
+  }
+}
