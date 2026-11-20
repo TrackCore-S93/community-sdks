@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:test/test.dart';
@@ -47,6 +49,17 @@ const voice = {
   'duration_ms': 15000,
   'url': 'https://files.test/n',
 };
+
+/// A socket the test feeds by hand.
+class FakeSocket implements LiveSocket {
+  final StreamController<String> incoming = StreamController<String>();
+  @override
+  Stream<String> get messages => incoming.stream;
+  @override
+  void send(String text) {}
+  @override
+  Future<void> close() => incoming.close();
+}
 
 Future<(CommunityClient, FakeAdapter)> member(List<Object> replies) async {
   final adapter = FakeAdapter([session(), ...replies]);
@@ -174,6 +187,52 @@ void main() {
         throwsA(isA<CommunityConfigurationException>().having(
             (e) => e.reason, 'reason', CommunityConfigurationReason.noUser)));
     expect(adapter.calls, isEmpty);
+  });
+
+  test('chat events arrive on the live connection, though they name no post',
+      () async {
+    final socket = FakeSocket();
+    final c = CommunityClient.publishable(
+        apiKey: publishableKey,
+        baseUrl: base,
+        httpAdapter: FakeAdapter([session()]),
+        retryPolicy: quick,
+        liveSocket: (uri, headers) async => socket);
+    await c.initialize('ali');
+    final connection = c.live.connect();
+    final got = <LiveEvent>[];
+    final listening = connection.events.listen(got.add);
+    await Future<void>.delayed(Duration.zero);
+
+    socket.incoming.add(jsonEncode({'type': 'ready'}));
+    socket.incoming.add(jsonEncode({'type': 'watching', 'topic_id': ''}));
+    socket.incoming.add(jsonEncode({
+      'type': 'coach_message.created',
+      'message_id': 'cm_msg_9',
+      'author_external_id': 'coach_1'
+    }));
+    socket.incoming.add(jsonEncode({'type': 'coach_chat.read'}));
+    socket.incoming.add(jsonEncode({
+      'type': 'post.created',
+      'topic_id': 'cm_top_1',
+      'post_id': 'cm_post_1',
+      'author_external_id': 'sara'
+    }));
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+
+    expect(got.map((e) => e.type), [
+      LiveEventType.coachMessageCreated,
+      LiveEventType.coachChatRead,
+      LiveEventType.postCreated,
+    ]);
+    expect(got[0].messageId, 'cm_msg_9');
+    expect(got[0].authorExternalId, 'coach_1');
+    expect(got[0].postId, isNull);
+    expect(got[2].postId, 'cm_post_1');
+
+    await listening.cancel();
+    await connection.close();
+    c.close();
   });
 
   test('the coach lists the chats, opens one and marks it read', () async {

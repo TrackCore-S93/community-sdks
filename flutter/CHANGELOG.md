@@ -1,3 +1,9 @@
+## 0.1.2
+
+- Fixed: coaching-chat events never reached `live.connect().events`. The
+  connection dropped every event that named no post, and a chat event names
+  none. A chat screen now updates as messages arrive.
+
 ## 0.1.1
 
 - `coachChat`: the coaching chat, a member's one-to-one chat with their

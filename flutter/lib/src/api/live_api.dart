@@ -114,11 +114,9 @@ final class LiveConnection {
       _setStatus(LiveStatus.open);
       return;
     }
-    if (type == 'watching' ||
-        type is! String ||
-        !decoded.containsKey('post_id')) {
-      return;
-    }
+    // Anything else with a type is an event. A coaching-chat event has no
+    // post, so the post's id is not what makes one.
+    if (type == 'watching' || type is! String) return;
     if (!_events.isClosed) {
       _events.add(LiveEvent.fromJson(decoded.cast<String, Object?>()));
     }
