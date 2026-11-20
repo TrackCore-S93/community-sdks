@@ -201,6 +201,79 @@ const List<OperationSpec> operations = [
     path: '/v1/media/{media_id}',
     auth: 'member'
   ),
+  (sdk: 'coachChat.get', method: 'GET', path: '/v1/coach-chat', auth: 'member'),
+  (
+    sdk: 'coachChat.messages',
+    method: 'GET',
+    path: '/v1/coach-chat/messages',
+    auth: 'member'
+  ),
+  (
+    sdk: 'coachChat.send',
+    method: 'POST',
+    path: '/v1/coach-chat/messages',
+    auth: 'member'
+  ),
+  (
+    sdk: 'coachChat.edit',
+    method: 'PATCH',
+    path: '/v1/coach-chat/messages/{message_id}',
+    auth: 'member'
+  ),
+  (
+    sdk: 'coachChat.delete',
+    method: 'DELETE',
+    path: '/v1/coach-chat/messages/{message_id}',
+    auth: 'member'
+  ),
+  (
+    sdk: 'coachChat.markRead',
+    method: 'POST',
+    path: '/v1/coach-chat/read',
+    auth: 'member'
+  ),
+  (
+    sdk: 'coachChat.search',
+    method: 'GET',
+    path: '/v1/coach-chat/search',
+    auth: 'member'
+  ),
+  (
+    sdk: 'coachChat.startFile',
+    method: 'POST',
+    path: '/v1/coach-chat/files',
+    auth: 'creator'
+  ),
+  (
+    sdk: 'coachChat.completeFile',
+    method: 'POST',
+    path: '/v1/coach-chat/files/{file_id}/complete',
+    auth: 'creator'
+  ),
+  (
+    sdk: 'coachChat.chats',
+    method: 'GET',
+    path: '/v1/coach-chat/members',
+    auth: 'creator'
+  ),
+  (
+    sdk: 'coachChat.memberMessages',
+    method: 'GET',
+    path: '/v1/coach-chat/members/{external_id}/messages',
+    auth: 'creator'
+  ),
+  (
+    sdk: 'coachChat.sendAsCoach',
+    method: 'POST',
+    path: '/v1/coach-chat/members/{external_id}/messages',
+    auth: 'creator'
+  ),
+  (
+    sdk: 'coachChat.markMemberRead',
+    method: 'POST',
+    path: '/v1/coach-chat/members/{external_id}/read',
+    auth: 'creator'
+  ),
   (
     sdk: 'push.register',
     method: 'PUT',

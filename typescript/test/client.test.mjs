@@ -278,7 +278,7 @@ test("requests are shaped as the API expects", async () => {
 test("the SDK has a call for every route in the contract", () => {
   const { fetch } = fakeFetch([]);
   const c = new Community({ apiKey: SECRET, baseUrl: base, fetch, runtime: "server" });
-  assert.equal(OPERATIONS.length, 55);
+  assert.equal(OPERATIONS.length, 68);
   for (const op of OPERATIONS) {
     const [namespace, method] = op.sdk.split(".");
     const owner = namespace === "client" ? c : c[namespace];

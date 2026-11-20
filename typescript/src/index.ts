@@ -11,6 +11,7 @@ export {
 } from "./api.js";
 export { ReactionsAPI, applyReaction } from "./reactions.js";
 export { MediaAPI, type UploadSource } from "./media.js";
+export { CoachChatAPI, type CoachFileParams, type CoachMessagesParams, type SendAsCoachParams } from "./coachchat.js";
 export { LiveAPI, type LiveConnection, type LiveOptions, type LiveStatus } from "./live.js";
 export { OPERATIONS, CONTRACT_VERSION, type OperationSpec } from "./generated/operations.js";
 export { ERROR_CODE_SPECS } from "./generated/errors.js";

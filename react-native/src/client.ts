@@ -5,6 +5,7 @@ import {
   ValidationError,
   type BlocksAPI,
   type CallOptions,
+  type CoachChatAPI,
   type CommentsAPI,
   type CommunityAPI,
   type CommunityOptions,
@@ -184,6 +185,14 @@ export class Community {
   get reports(): Pick<ReportsAPI, "reportPost" | "reportComment"> { return this.#ready.reports; }
   /** Notifications. */
   get notifications(): NotificationsAPI { return this.#ready.notifications; }
+  /**
+   * The coaching chat: the member's one-to-one chat with their coach.
+   * Answering as the coach, and sending voice notes and files, is the
+   * creator's, on a backend.
+   */
+  get coachChat(): Pick<CoachChatAPI, "get" | "messages" | "send" | "edit" | "delete" | "markRead" | "search"> {
+    return this.#ready.coachChat;
+  }
   /**
    * Push notifications. Get the phone's push token from Expo's or Firebase's
    * library and pass it to `push.register`; `signOut` unregisters it.

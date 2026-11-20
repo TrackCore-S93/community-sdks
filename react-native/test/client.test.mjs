@@ -72,6 +72,18 @@ test("the creator's calls are not on a device", async () => {
   assert.equal(f.calls.length, 1);
 });
 
+test("a member uses the coaching chat; answering as the coach is not for a device", async () => {
+  const sent = { id: "cm_msg_1", author: null, from_coach: false, body: "Hi Coach!", images: [], files: [], is_mine: true, is_read: false, edited_at: null, created_at: "2026-11-20T10:00:00Z" };
+  const f = fakeFetch([session(), json(201, sent), json(200, { messages: [sent], older_cursor: "o", newer_cursor: "n", has_older: false, has_newer: false })]);
+  const client = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch: f.fetch });
+  await client.initialize("ali");
+  assert.equal((await client.coachChat.send({ body: "Hi Coach!" })).id, "cm_msg_1");
+  assert.equal(f.calls[1].url, `${base}/v1/coach-chat/messages`);
+  assert.equal((await client.coachChat.messages()).messages.length, 1);
+  await assert.rejects(async () => client.coachChat.sendAsCoach({ memberId: "ali", body: "x" }), (e) => e instanceof ConfigurationError && e.reason === "secret_key_required");
+  assert.equal(f.calls.length, 3);
+});
+
 test("uploadFile reads a file on the device and uploads it", async () => {
   const bytes = new Uint8Array([1, 2, 3, 4]);
   const f = fakeFetch([

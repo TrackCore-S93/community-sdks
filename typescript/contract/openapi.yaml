@@ -92,6 +92,8 @@ tags:
     description: "Reporting posts and comments, and the archive of what reports removed."
   - name: Notifications
     description: "What others did to what a member wrote."
+  - name: Coach chat
+    description: "A member's one-to-one chat with their coach."
   - name: Push
     description: "Notifications sent to the phone while the app is closed."
   - name: Settings
@@ -2679,6 +2681,1038 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/coach-chat:
+    get:
+      operationId: getCoachChat
+      tags: [Coach chat]
+      summary: "The member's coaching chat at a glance"
+      description: "How many of the coach's messages the member has not seen, and when the last message was sent. Every member has one chat with their coach; it is made by its first message, and before that this answers zero and null. Whether the member's subscription lets them use the chat is the app's decision and is not checked here.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      x-community-auth: member
+      x-community-sdk: coachChat.get
+      parameters:
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      responses:
+        "200":
+          description: "The unread count and the last message time."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachChat'
+        "400":
+          description: "One of: `ambiguous_credentials`."
+          x-community-codes: [ambiguous_credentials]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`."
+          x-community-codes: [user_scope_violation]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/coach-chat/messages:
+    get:
+      operationId: listCoachMessages
+      tags: [Coach chat]
+      summary: "One page of the coaching chat"
+      description: "Messages oldest first, as the screen shows them. With no cursor, the newest messages. `before` gives the ones above (scrolling up); `after` gives the ones below, which is also how to catch up after a live event or a dropped connection; `around` gives the page with that message in the middle, for jumping to a search result. Send at most one of the three. A member with no chat yet gets an empty page.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      x-community-auth: member
+      x-community-sdk: coachChat.messages
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: "Page size, 1 to 100. Left out, 30."
+          schema:
+            type: integer
+          example: 30
+        - name: before
+          in: query
+          required: false
+          description: "An `older_cursor`: the messages before that page."
+          schema:
+            type: string
+        - name: after
+          in: query
+          required: false
+          description: "A `newer_cursor`: the messages after that page."
+          schema:
+            type: string
+        - name: around
+          in: query
+          required: false
+          description: "A message id: the page with that message in the middle."
+          schema:
+            type: string
+          example: "cm_msg_01HZX…"
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      responses:
+        "200":
+          description: "One page of messages."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachMessagePage'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`."
+          x-community-codes: [user_scope_violation]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "404":
+          description: "One of: `not_found`."
+          x-community-codes: [not_found]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    post:
+      operationId: sendCoachMessage
+      tags: [Coach chat]
+      summary: "Send a message to the coach"
+      description: "Text, images, or both. Images are uploaded first with `POST /v1/media`. Sending also marks the chat read for the member.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      x-community-auth: member
+      x-community-sdk: coachChat.send
+      parameters:
+        - $ref: '#/components/parameters/Idempotency'
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendCoachMessageRequest'
+      responses:
+        "200":
+          description: "This `Idempotency-Key` was already used by this user: the first message."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachMessage'
+        "201":
+          description: "Sent. The body is the new message."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachMessage'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`."
+          x-community-codes: [user_scope_violation]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "413":
+          description: "One of: `payload_too_large`."
+          x-community-codes: [payload_too_large]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "422":
+          description: "One of: `validation_failed`."
+          x-community-codes: [validation_failed]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/coach-chat/messages/{message_id}:
+    patch:
+      operationId: editCoachMessage
+      tags: [Coach chat]
+      summary: "Edit a message"
+      description: "Changes the text of one of the member's own messages and sets `edited_at`. Its images stay. The text may be emptied only when the message has images. Sending the text it already has changes nothing.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      x-community-auth: member
+      x-community-sdk: coachChat.edit
+      parameters:
+        - $ref: '#/components/parameters/MessageId'
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditCoachMessageRequest'
+      responses:
+        "200":
+          description: "The message as it is now."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachMessage'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`, `forbidden`."
+          x-community-codes: [user_scope_violation, forbidden]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "404":
+          description: "One of: `not_found`."
+          x-community-codes: [not_found]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "413":
+          description: "One of: `payload_too_large`."
+          x-community-codes: [payload_too_large]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "422":
+          description: "One of: `validation_failed`."
+          x-community-codes: [validation_failed]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    delete:
+      operationId: deleteCoachMessage
+      tags: [Coach chat]
+      summary: "Delete a message"
+      description: "Deletes one of the member's own messages for good, with its images. Deleting one that is already gone is not an error. The coach's message cannot be deleted by the member.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      x-community-auth: member
+      x-community-sdk: coachChat.delete
+      parameters:
+        - $ref: '#/components/parameters/MessageId'
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      responses:
+        "200":
+          description: "Whether anything was deleted."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deleted'
+        "400":
+          description: "One of: `ambiguous_credentials`."
+          x-community-codes: [ambiguous_credentials]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`, `forbidden`."
+          x-community-codes: [user_scope_violation, forbidden]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/coach-chat/read:
+    post:
+      operationId: markCoachChatRead
+      tags: [Coach chat]
+      summary: "Mark the coaching chat read"
+      description: "Records that the member has seen everything in the chat so far. Send it when the chat is open and a message from the coach is on screen. Sending it again changes nothing more.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      x-community-auth: member
+      x-community-sdk: coachChat.markRead
+      parameters:
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      responses:
+        "200":
+          description: "The unread count, now zero, and the last message time."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachChat'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`."
+          x-community-codes: [user_scope_violation]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/coach-chat/search:
+    get:
+      operationId: searchCoachChat
+      tags: [Coach chat]
+      summary: "Search the coaching chat"
+      description: "The messages of the member's chat whose text contains every word of `q`; the last word may be only the start of one. Newest first. No match is an empty list. To show a result in place, read the chat with `around` set to its id.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      x-community-auth: member
+      x-community-sdk: coachChat.search
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: "The words to look for, at least 2 characters."
+          schema:
+            type: string
+          example: "transformation plan"
+        - name: limit
+          in: query
+          required: false
+          description: "Page size, 1 to 100. Left out, 30."
+          schema:
+            type: integer
+          example: 30
+        - name: before
+          in: query
+          required: false
+          description: "A `next_cursor` from the page before: the next older matches."
+          schema:
+            type: string
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      responses:
+        "200":
+          description: "The matches, possibly none."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachSearchResults'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`."
+          x-community-codes: [user_scope_violation]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "422":
+          description: "One of: `validation_failed`."
+          x-community-codes: [validation_failed]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/coach-chat/files:
+    post:
+      operationId: beginCoachFile
+      tags: [Coach chat]
+      summary: "Start the upload of a voice note or a document"
+      description: "The coach's side of the chat can send a voice note or a document. This records the file and returns a link to send its bytes to. Send them with the method given, then call the complete route, then name the file in `file_ids` when sending a message. A voice note may be any audio type. A document must be a PDF, Word, Excel, PowerPoint, RTF, text or CSV file. A file that is never put on a message is removed after a day.\n\n**Who may call it.** Secret key only, with `X-External-Id` naming a member whose role is `coach` or `creator`: the creator's backend, acting as that coach."
+      x-community-auth: creator
+      x-community-sdk: coachChat.startFile
+      parameters:
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeginCoachFileRequest'
+      responses:
+        "201":
+          description: "Started. Send the file to `upload.url`."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachFileUpload'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `forbidden`."
+          x-community-codes: [forbidden]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "413":
+          description: "One of: `payload_too_large`."
+          x-community-codes: [payload_too_large]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "422":
+          description: "One of: `validation_failed`."
+          x-community-codes: [validation_failed]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/coach-chat/files/{file_id}/complete:
+    post:
+      operationId: completeCoachFile
+      tags: [Coach chat]
+      summary: "Finish the upload of a voice note or a document"
+      description: "Says the file has been sent to its link. The server checks it arrived and is within the limit, and marks it ready to put on a message. Safe to repeat. A file that is empty or over the limit is refused and removed: start a new upload.\n\n**Who may call it.** Secret key only, with `X-External-Id` naming a member whose role is `coach` or `creator`: the creator's backend, acting as that coach."
+      x-community-auth: creator
+      x-community-sdk: coachChat.completeFile
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "The file's id, from starting the upload."
+          example: "cm_att_…"
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      responses:
+        "200":
+          description: "Ready. The body is the file."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachFile'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `forbidden`."
+          x-community-codes: [forbidden]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "404":
+          description: "One of: `not_found`."
+          x-community-codes: [not_found]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "409":
+          description: "One of: `media_not_uploaded`."
+          x-community-codes: [media_not_uploaded]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "413":
+          description: "One of: `media_too_large`."
+          x-community-codes: [media_too_large]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/coach-chat/members:
+    get:
+      operationId: listCoachChats
+      tags: [Coach chat]
+      summary: "The coach's list of chats"
+      description: "Every member's chat that has a message in it, the one with the newest message first: the coach's inbox. Each row has the member, how many of their messages the coach's side has not seen, and the newest message for a preview line. Every coach and the creator see the same list; a chat is with the coach's side, not with one person. `next_cursor`, sent as `before`, gives the next page.\n\n**Who may call it.** Secret key only, with `X-External-Id` naming a member whose role is `coach` or `creator`: the creator's backend, acting as that coach."
+      x-community-auth: creator
+      x-community-sdk: coachChat.chats
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: "Page size, 1 to 100. Left out, 30."
+          schema:
+            type: integer
+          example: 30
+        - name: before
+          in: query
+          required: false
+          description: "A `next_cursor`: the chats after that page."
+          schema:
+            type: string
+        - name: unread
+          in: query
+          required: false
+          description: "`true` for only the chats with something the coach's side has not seen."
+          schema:
+            type: boolean
+          example: false
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      responses:
+        "200":
+          description: "One page of chats."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachChatList'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `forbidden`."
+          x-community-codes: [forbidden]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/coach-chat/members/{external_id}/messages:
+    get:
+      operationId: listMemberMessagesAsCoach
+      tags: [Coach chat]
+      summary: "One page of a member's chat, as the coach"
+      description: "One member's chat as the coach's side sees it, oldest first, with the same `before`, `after` and `around` as the member's own read. `is_mine` is true on the messages the coach's side wrote, and `is_read` on them says the member has seen them. Reading does not mark the chat read; send `POST /v1/coach-chat/members/{external_id}/read` for that. A member with no chat yet gives an empty page.\n\n**Who may call it.** Secret key only, with `X-External-Id` naming a member whose role is `coach` or `creator`: the creator's backend, acting as that coach."
+      x-community-auth: creator
+      x-community-sdk: coachChat.memberMessages
+      parameters:
+        - $ref: '#/components/parameters/ExternalId'
+        - name: limit
+          in: query
+          required: false
+          description: "Page size, 1 to 100. Left out, 30."
+          schema:
+            type: integer
+          example: 30
+        - name: before
+          in: query
+          required: false
+          description: "An `older_cursor`: the messages before that page."
+          schema:
+            type: string
+        - name: after
+          in: query
+          required: false
+          description: "A `newer_cursor`: the messages after that page."
+          schema:
+            type: string
+        - name: around
+          in: query
+          required: false
+          description: "A message id: the page with that message in the middle."
+          schema:
+            type: string
+          example: "cm_msg_01HZX…"
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      responses:
+        "200":
+          description: "One page of messages."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachMessagePage'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `forbidden`."
+          x-community-codes: [forbidden]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "404":
+          description: "One of: `not_found`."
+          x-community-codes: [not_found]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    post:
+      operationId: sendAsCoach
+      tags: [Coach chat]
+      summary: "Send a message to a member, as the coach"
+      description: "Adds a message from the coach's side to one member's chat, making the chat if this is its first message. Text, images, files, or any mix. Images are uploaded first with `POST /v1/media`, files with `POST /v1/coach-chat/files`, both as the same coach. Sending also marks the chat read for the coach's side, so the member's own messages show as read.\n\n**Who may call it.** Secret key only, with `X-External-Id` naming a member whose role is `coach` or `creator`: the creator's backend, acting as that coach."
+      x-community-auth: creator
+      x-community-sdk: coachChat.sendAsCoach
+      parameters:
+        - $ref: '#/components/parameters/ExternalId'
+        - $ref: '#/components/parameters/Idempotency'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendAsCoachRequest'
+      responses:
+        "200":
+          description: "This `Idempotency-Key` was already used by this sender in this chat: the first message."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachMessage'
+        "201":
+          description: "Sent. The body is the new message, as its sender sees it."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachMessage'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `forbidden`."
+          x-community-codes: [forbidden]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "404":
+          description: "One of: `not_found`."
+          x-community-codes: [not_found]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "413":
+          description: "One of: `payload_too_large`."
+          x-community-codes: [payload_too_large]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "422":
+          description: "One of: `validation_failed`."
+          x-community-codes: [validation_failed]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/coach-chat/members/{external_id}/read:
+    post:
+      operationId: markMemberChatRead
+      tags: [Coach chat]
+      summary: "Mark a member's chat read, as the coach"
+      description: "Records that the coach's side has seen everything in the member's chat so far, so the member's own messages show as read in their app. Send it when the coach has the chat open. Sending it again changes nothing more.\n\n**Who may call it.** Secret key only, with `X-External-Id` naming a member whose role is `coach` or `creator`: the creator's backend, acting as that coach."
+      x-community-auth: creator
+      x-community-sdk: coachChat.markMemberRead
+      parameters:
+        - $ref: '#/components/parameters/ExternalId'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      responses:
+        "200":
+          description: "The chat for the coach's side: `unread_count` is the member's messages not yet seen, now zero."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachChat'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `forbidden`."
+          x-community-codes: [forbidden]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "404":
+          description: "One of: `not_found`."
+          x-community-codes: [not_found]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /v1/push/devices:
     put:
       operationId: registerPushDevice
@@ -4048,6 +5082,14 @@ components:
       schema:
         type: string
       example: "cm_ntf_01HZX…"
+    MessageId:
+      name: message_id
+      in: path
+      required: true
+      description: "The chat message's id."
+      schema:
+        type: string
+      example: "cm_msg_01HZX…"
     ExternalId:
       name: external_id
       in: path
@@ -4694,7 +5736,7 @@ components:
           example: 4
         is_mine:
           type: boolean
-          description: "True when the user the call acts for wrote it."
+          description: "True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach."
           example: false
         is_pinned:
           type: boolean
@@ -4842,7 +5884,7 @@ components:
           example: 0
         is_mine:
           type: boolean
-          description: "True when the user the call acts for wrote it."
+          description: "True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach."
           example: false
         created_at:
           type: string
@@ -5450,6 +6492,304 @@ components:
           type: [boolean, 'null']
           description: "Whether notifications are also sent to members' phones."
           example: true
+    CoachChat:
+      type: object
+      description: "A member's coaching chat at a glance."
+      x-go-type: httpx.coachChatBody
+      required: [unread_count, last_message_at]
+      properties:
+        unread_count:
+          type: integer
+          description: "How many messages from the other side have not been seen: the coach's, for the member; the member's, when the coach's side asks."
+          example: 2
+        last_message_at:
+          type: [string, 'null']
+          format: date-time
+          description: "When the last message was sent, or null while the chat is empty."
+    CoachChatList:
+      type: object
+      description: "One page of the coach's list of chats, newest activity first."
+      x-go-type: httpx.coachChatListBody
+      required: [chats, next_cursor, has_more]
+      properties:
+        chats:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoachChatRow'
+          description: "The chats on this page."
+        next_cursor:
+          type: [string, 'null']
+          description: "Send as `before` for the next page. Null at the end."
+        has_more:
+          type: boolean
+          description: "True when there are more chats after this page."
+          example: false
+    CoachChatRow:
+      type: object
+      description: "One member's chat in the coach's list."
+      x-go-type: httpx.coachChatRowBody
+      required: [member, unread_count, last_message_at, last_message]
+      properties:
+        member:
+          description: "Whose chat it is. The username is empty for someone who has not joined the community."
+          allOf:
+            - $ref: '#/components/schemas/Author'
+        unread_count:
+          type: integer
+          description: "How many of the member's messages the coach's side has not seen."
+          example: 2
+        last_message_at:
+          type: string
+          format: date-time
+          description: "When the newest message was sent, by either side."
+        last_message:
+          description: "The newest message, for the preview line."
+          allOf:
+            - $ref: '#/components/schemas/CoachLastMessage'
+    CoachLastMessage:
+      type: object
+      description: "The preview of a chat's newest message."
+      x-go-type: httpx.coachLastMessageBody
+      required: [id, body, from_coach, images_count, files_count]
+      properties:
+        id:
+          type: string
+          description: "The message's id."
+          example: "cm_msg_…"
+        body:
+          type: string
+          description: "Its text. May be empty when it has images or files."
+          example: "Hi Coach! Any recommendations for my workout this week?"
+        from_coach:
+          type: boolean
+          description: "True when the coach's side wrote it."
+          example: false
+        images_count:
+          type: integer
+          description: "How many pictures it has."
+          example: 0
+        files_count:
+          type: integer
+          description: "How many voice notes and documents it has."
+          example: 0
+    CoachMessage:
+      type: object
+      description: "One message in a coaching chat."
+      x-go-type: httpx.coachMessageBody
+      required: [id, author, from_coach, body, images, files, is_mine, is_read, edited_at, created_at]
+      properties:
+        id:
+          type: string
+          description: "The message's id."
+          example: "cm_msg_…"
+        author:
+          description: "Who wrote it. Null once that person's account has been erased; the message stays. The username is empty for someone who has not joined the community."
+          anyOf:
+            - $ref: '#/components/schemas/Author'
+            - type: 'null'
+        from_coach:
+          type: boolean
+          description: "Which side wrote it: true for the coach's side, false for the member."
+          example: false
+        body:
+          type: string
+          description: "The text. May be empty when the message has images or files."
+          example: "Hi Coach! Any recommendations for my workout this week?"
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+          description: "The message's pictures."
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoachFile'
+          description: "The voice notes and documents on it. Only the coach's side sends them; a member's message has none."
+        is_mine:
+          type: boolean
+          description: "True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach."
+          example: true
+        is_read:
+          type: boolean
+          description: "True when the other side of the chat has seen it. On the member's own message, the coach has read it; on the coach's, the member has."
+          example: false
+        edited_at:
+          type: [string, 'null']
+          format: date-time
+          description: "When the text was last changed, or null if it never was."
+        created_at:
+          type: string
+          format: date-time
+          description: "When it was sent."
+    CoachMessagePage:
+      type: object
+      description: "One page of a coaching chat, oldest first."
+      x-go-type: httpx.coachMessagePageBody
+      required: [messages, older_cursor, newer_cursor, has_older, has_newer]
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoachMessage'
+          description: "The messages on this page."
+        older_cursor:
+          type: [string, 'null']
+          description: "Send as `before` for the messages above these. Null when the page is empty."
+        newer_cursor:
+          type: [string, 'null']
+          description: "Send as `after` for the messages below these, including ones that arrive later. Null when the page is empty."
+        has_older:
+          type: boolean
+          description: "True when there are messages before this page."
+          example: false
+        has_newer:
+          type: boolean
+          description: "True when there are messages after this page."
+          example: false
+    CoachFile:
+      type: object
+      description: "A voice note or a document on a coaching-chat message."
+      x-go-type: httpx.coachFileBody
+      required: [id, kind, name, content_type, bytes, duration_ms, url]
+      properties:
+        id:
+          type: string
+          description: "The file's id."
+          example: "cm_att_…"
+        kind:
+          type: string
+          enum: [voice, file]
+          description: "`voice` is a voice note, to play. `file` is a document, to open or save."
+          example: "voice"
+        name:
+          type: string
+          description: "What the sender called the file."
+          example: "Nutrition plan.pdf"
+        content_type:
+          type: string
+          description: "The file's type."
+          example: "audio/mp4"
+        bytes:
+          type: [integer, 'null']
+          description: "The file's size in bytes. Null until the upload is finished."
+          example: 184320
+        duration_ms:
+          type: [integer, 'null']
+          description: "A voice note's length in milliseconds, when the sender gave it. Null otherwise."
+          example: 15000
+        url:
+          type: [string, 'null']
+          description: "A short-lived link to the file. Null until the upload is finished."
+    CoachFileUpload:
+      type: object
+      description: "A started file upload: where to send the bytes."
+      x-go-type: httpx.coachFileUploadBody
+      required: [id, kind, name, upload, max_bytes]
+      properties:
+        id:
+          type: string
+          description: "The file's id, used to finish the upload and to put the file on a message."
+          example: "cm_att_…"
+        kind:
+          type: string
+          enum: [voice, file]
+          description: "What was asked for."
+          example: "file"
+        name:
+          type: string
+          description: "The file's name."
+          example: "Nutrition plan.pdf"
+        upload:
+          description: "Where and how to send the file."
+          allOf:
+            - $ref: '#/components/schemas/UploadTarget'
+        max_bytes:
+          type: integer
+          description: "The largest file accepted, in bytes."
+          example: 26214400
+    BeginCoachFileRequest:
+      type: object
+      description: "A voice note or a document about to be uploaded."
+      x-go-type: httpx.beginCoachFileRequest
+      required: [kind, file_name, content_type]
+      properties:
+        kind:
+          type: string
+          enum: [voice, file]
+          description: "`voice` for a voice note, `file` for a document."
+          example: "file"
+        file_name:
+          type: string
+          description: "The file's name, shown to the member."
+          example: "Nutrition plan.pdf"
+        content_type:
+          type: string
+          description: "The file's type. Any audio type for a voice note. For a document: PDF, Word, Excel, PowerPoint, RTF, text or CSV."
+          example: "application/pdf"
+        duration_ms:
+          type: integer
+          description: "A voice note's length in milliseconds. Optional."
+          example: 15000
+    SendAsCoachRequest:
+      type: object
+      description: "A message from the coach's side: text, images, files, or any mix."
+      x-go-type: httpx.sendAsCoachRequest
+      properties:
+        body:
+          type: string
+          description: "The text. May be left out when the message has images or files."
+          example: "Here is your plan for the week."
+        media_ids:
+          type: array
+          items:
+            type: string
+          description: "Images this coach uploaded, in display order."
+        file_ids:
+          type: array
+          items:
+            type: string
+          description: "Voice notes and documents this coach uploaded, in order. At most 10."
+    SendCoachMessageRequest:
+      type: object
+      description: "A new chat message: text, images, or both."
+      x-go-type: httpx.sendCoachMessageRequest
+      properties:
+        body:
+          type: string
+          description: "The text. May be left out when the message has images."
+          example: "Thanks!"
+        media_ids:
+          type: array
+          items:
+            type: string
+          description: "Uploaded images, in display order."
+    EditCoachMessageRequest:
+      type: object
+      description: "The new text of a chat message."
+      x-go-type: httpx.editCoachMessageRequest
+      properties:
+        body:
+          type: string
+          description: "The text. May be empty only when the message has images."
+          example: "Thanks a lot!"
+    CoachSearchResults:
+      type: object
+      description: "One page of chat search results, newest first."
+      x-go-type: httpx.coachSearchBody
+      required: [messages, next_cursor, has_more]
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoachMessage'
+          description: "The matching messages."
+        next_cursor:
+          type: [string, 'null']
+          description: "Send as `before` for the next page. Null at the end."
+        has_more:
+          type: boolean
+          description: "True when there is another page."
+          example: false
     RegisterPushDeviceRequest:
       type: object
       description: "A phone's push token."
@@ -5547,7 +6887,7 @@ components:
       type: object
       description: "One message on the live connection."
       x-go-type: live.Event
-      required: [type, post_id]
+      required: [type]
       properties:
         type:
           description: "What happened."
@@ -5559,11 +6899,19 @@ components:
           example: "cm_top_…"
         post_id:
           type: string
-          description: "The post concerned."
+          description: "The post concerned. Absent on coaching-chat events."
           example: "cm_post_…"
         comment_id:
           type: string
           description: "The comment concerned, for comment events."
+        message_id:
+          type: string
+          description: "The chat message concerned, on `coach_message` events."
+          example: "cm_msg_…"
+        member_external_id:
+          type: string
+          description: "Whose chat a coaching-chat event is about. Sent only to the coach's side: a connection made with a secret key, for the backend or naming a coach or the creator."
+          example: "user_42"
         parent_id:
           type: string
           description: "The comment it replies to, when it is a reply."
@@ -5573,7 +6921,7 @@ components:
             - $ref: '#/components/schemas/NotificationKind'
         author_external_id:
           type: string
-          description: "Who wrote the post or comment, for created and deleted events. Never sent for reactions."
+          description: "Who wrote the post, comment or chat message, for created, updated and deleted events. Never sent for reactions."
         reactions:
           type: array
           items:
@@ -5619,7 +6967,7 @@ components:
     LiveEventType:
       type: string
       description: "The kinds of live message."
-      enum: ["post.created", "post.deleted", "post.pinned", "post.unpinned", "post.reactions", "comment.created", "comment.deleted", "comment.reactions", "notification.created"]
+      enum: ["post.created", "post.deleted", "post.pinned", "post.unpinned", "post.reactions", "comment.created", "comment.deleted", "comment.reactions", "notification.created", "coach_message.created", "coach_message.updated", "coach_message.deleted", "coach_chat.read", "coach_chat.member_read"]
     ErrorEnvelope:
       type: object
       description: "The body of every non-2xx reply."

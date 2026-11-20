@@ -306,7 +306,7 @@ export interface Post {
   reactions: Reaction[];
   /** How many comments and replies the post has. */
   comments_count: number;
-  /** True when the user the call acts for wrote it. */
+  /** True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach. */
   is_mine: boolean;
   /** True when the creator has pinned it. */
   is_pinned: boolean;
@@ -384,7 +384,7 @@ export interface Comment {
   reactions: Reaction[];
   /** How many replies it has. */
   replies_count: number;
-  /** True when the user the call acts for wrote it. */
+  /** True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach. */
   is_mine: boolean;
   /** When it was written. */
   created_at: string;
@@ -718,6 +718,166 @@ export interface UpdateSettingsRequest {
   push_enabled?: boolean | null;
 }
 
+/** A member's coaching chat at a glance. */
+export interface CoachChat {
+  /** How many messages from the other side have not been seen: the coach's, for the member; the member's, when the coach's side asks. */
+  unread_count: number;
+  /** When the last message was sent, or null while the chat is empty. */
+  last_message_at: string | null;
+}
+
+/** One page of the coach's list of chats, newest activity first. */
+export interface CoachChatList {
+  /** The chats on this page. */
+  chats: CoachChatRow[];
+  /** Send as `before` for the next page. Null at the end. */
+  next_cursor: string | null;
+  /** True when there are more chats after this page. */
+  has_more: boolean;
+}
+
+/** One member's chat in the coach's list. */
+export interface CoachChatRow {
+  /** Whose chat it is. The username is empty for someone who has not joined the community. */
+  member: Author;
+  /** How many of the member's messages the coach's side has not seen. */
+  unread_count: number;
+  /** When the newest message was sent, by either side. */
+  last_message_at: string;
+  /** The newest message, for the preview line. */
+  last_message: CoachLastMessage;
+}
+
+/** The preview of a chat's newest message. */
+export interface CoachLastMessage {
+  /** The message's id. */
+  id: string;
+  /** Its text. May be empty when it has images or files. */
+  body: string;
+  /** True when the coach's side wrote it. */
+  from_coach: boolean;
+  /** How many pictures it has. */
+  images_count: number;
+  /** How many voice notes and documents it has. */
+  files_count: number;
+}
+
+/** One message in a coaching chat. */
+export interface CoachMessage {
+  /** The message's id. */
+  id: string;
+  /** Who wrote it. Null once that person's account has been erased; the message stays. The username is empty for someone who has not joined the community. */
+  author: Author | null;
+  /** Which side wrote it: true for the coach's side, false for the member. */
+  from_coach: boolean;
+  /** The text. May be empty when the message has images or files. */
+  body: string;
+  /** The message's pictures. */
+  images: Image[];
+  /** The voice notes and documents on it. Only the coach's side sends them; a member's message has none. */
+  files: CoachFile[];
+  /** True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach. */
+  is_mine: boolean;
+  /** True when the other side of the chat has seen it. On the member's own message, the coach has read it; on the coach's, the member has. */
+  is_read: boolean;
+  /** When the text was last changed, or null if it never was. */
+  edited_at: string | null;
+  /** When it was sent. */
+  created_at: string;
+}
+
+/** One page of a coaching chat, oldest first. */
+export interface CoachMessagePage {
+  /** The messages on this page. */
+  messages: CoachMessage[];
+  /** Send as `before` for the messages above these. Null when the page is empty. */
+  older_cursor: string | null;
+  /** Send as `after` for the messages below these, including ones that arrive later. Null when the page is empty. */
+  newer_cursor: string | null;
+  /** True when there are messages before this page. */
+  has_older: boolean;
+  /** True when there are messages after this page. */
+  has_newer: boolean;
+}
+
+/** A voice note or a document on a coaching-chat message. */
+export interface CoachFile {
+  /** The file's id. */
+  id: string;
+  /** `voice` is a voice note, to play. `file` is a document, to open or save. */
+  kind: "voice" | "file";
+  /** What the sender called the file. */
+  name: string;
+  /** The file's type. */
+  content_type: string;
+  /** The file's size in bytes. Null until the upload is finished. */
+  bytes: number | null;
+  /** A voice note's length in milliseconds, when the sender gave it. Null otherwise. */
+  duration_ms: number | null;
+  /** A short-lived link to the file. Null until the upload is finished. */
+  url: string | null;
+}
+
+/** A started file upload: where to send the bytes. */
+export interface CoachFileUpload {
+  /** The file's id, used to finish the upload and to put the file on a message. */
+  id: string;
+  /** What was asked for. */
+  kind: "voice" | "file";
+  /** The file's name. */
+  name: string;
+  /** Where and how to send the file. */
+  upload: UploadTarget;
+  /** The largest file accepted, in bytes. */
+  max_bytes: number;
+}
+
+/** A voice note or a document about to be uploaded. */
+export interface BeginCoachFileRequest {
+  /** `voice` for a voice note, `file` for a document. */
+  kind: "voice" | "file";
+  /** The file's name, shown to the member. */
+  file_name: string;
+  /** The file's type. Any audio type for a voice note. For a document: PDF, Word, Excel, PowerPoint, RTF, text or CSV. */
+  content_type: string;
+  /** A voice note's length in milliseconds. Optional. */
+  duration_ms?: number;
+}
+
+/** A message from the coach's side: text, images, files, or any mix. */
+export interface SendAsCoachRequest {
+  /** The text. May be left out when the message has images or files. */
+  body?: string;
+  /** Images this coach uploaded, in display order. */
+  media_ids?: string[];
+  /** Voice notes and documents this coach uploaded, in order. At most 10. */
+  file_ids?: string[];
+}
+
+/** A new chat message: text, images, or both. */
+export interface SendCoachMessageRequest {
+  /** The text. May be left out when the message has images. */
+  body?: string;
+  /** Uploaded images, in display order. */
+  media_ids?: string[];
+}
+
+/** The new text of a chat message. */
+export interface EditCoachMessageRequest {
+  /** The text. May be empty only when the message has images. */
+  body?: string;
+}
+
+/** One page of chat search results, newest first. */
+export interface CoachSearchResults {
+  /** The matching messages. */
+  messages: CoachMessage[];
+  /** Send as `before` for the next page. Null at the end. */
+  next_cursor: string | null;
+  /** True when there is another page. */
+  has_more: boolean;
+}
+
 /** A phone's push token. */
 export interface RegisterPushDeviceRequest {
   /** The push token the phone gave the app: an Expo push token or a Firebase Cloud Messaging token. */
@@ -778,15 +938,19 @@ export interface LiveEvent {
   type: LiveEventType;
   /** The topic concerned. Absent on `notification.created`. */
   topic_id?: string;
-  /** The post concerned. */
-  post_id: string;
+  /** The post concerned. Absent on coaching-chat events. */
+  post_id?: string;
   /** The comment concerned, for comment events. */
   comment_id?: string;
+  /** The chat message concerned, on `coach_message` events. */
+  message_id?: string;
+  /** Whose chat a coaching-chat event is about. Sent only to the coach's side: a connection made with a secret key, for the backend or naming a coach or the creator. */
+  member_external_id?: string;
   /** The comment it replies to, when it is a reply. */
   parent_id?: string;
   /** What the notification is about, on `notification.created`. */
   kind?: NotificationKind;
-  /** Who wrote the post or comment, for created and deleted events. Never sent for reactions. */
+  /** Who wrote the post, comment or chat message, for created, updated and deleted events. Never sent for reactions. */
   author_external_id?: string;
   /** The full new list, for a reactions event. Empty when the last one was removed. */
   reactions?: LiveReaction[];
@@ -818,7 +982,7 @@ export type MediaStatus = "pending" | "ready" | "failed";
 export type NotificationKind = "post_reaction" | "comment_reaction" | "post_comment" | "comment_reply";
 
 /** The kinds of live message. */
-export type LiveEventType = "post.created" | "post.deleted" | "post.pinned" | "post.unpinned" | "post.reactions" | "comment.created" | "comment.deleted" | "comment.reactions" | "notification.created";
+export type LiveEventType = "post.created" | "post.deleted" | "post.pinned" | "post.unpinned" | "post.reactions" | "comment.created" | "comment.deleted" | "comment.reactions" | "notification.created" | "coach_message.created" | "coach_message.updated" | "coach_message.deleted" | "coach_chat.read" | "coach_chat.member_read";
 
 /** The body of every non-2xx reply. */
 export interface ErrorEnvelope {

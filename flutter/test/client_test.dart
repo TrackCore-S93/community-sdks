@@ -599,7 +599,7 @@ void main() {
   });
 
   test('the SDK has a call for every route in the contract', () {
-    expect(operations, hasLength(55));
+    expect(operations, hasLength(68));
     expect(operations.map((o) => o.sdk).toSet(), implemented);
   });
 
@@ -764,6 +764,19 @@ const Set<String> implemented = {
   'reports.list',
   'archive.list',
   'archive.get',
+  'coachChat.get',
+  'coachChat.messages',
+  'coachChat.send',
+  'coachChat.edit',
+  'coachChat.delete',
+  'coachChat.markRead',
+  'coachChat.search',
+  'coachChat.startFile',
+  'coachChat.completeFile',
+  'coachChat.chats',
+  'coachChat.memberMessages',
+  'coachChat.sendAsCoach',
+  'coachChat.markMemberRead',
   'notifications.list',
   'notifications.unreadCount',
   'notifications.markAllRead',

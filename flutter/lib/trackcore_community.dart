@@ -11,6 +11,7 @@
 library;
 
 export 'src/api/apis.dart';
+export 'src/api/coach_chat_api.dart';
 export 'src/api/live_api.dart';
 export 'src/api/live_socket_types.dart';
 export 'src/api/media_api.dart';

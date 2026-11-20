@@ -26,7 +26,11 @@ const KEY_SHAPE = /^cm_(sk|pk)_(live|test)_[A-Za-z0-9_-]{8,}$/;
 const SESSION_SHAPE = /^cm_st_[A-Za-z0-9_-]{43}$/;
 
 /** Who a request acts for, which decides the headers it carries. */
-export type Audience = "any_key" | "member" | "creator" | "member_or_creator" | "session";
+/**
+ * `coach` is the creator's backend acting as one named member: a secret key,
+ * and a user set with `initialize` or `setUser`.
+ */
+export type Audience = "any_key" | "member" | "creator" | "coach" | "member_or_creator" | "session";
 
 /** One request, as a namespace describes it. */
 export interface RequestSpec {
@@ -288,6 +292,15 @@ export class Transport {
         throw new ConfigurationError("secret_key_required", "This call needs a secret key and belongs on your backend.");
       }
       return {};
+    }
+    if (audience === "coach") {
+      if (this.keyKind !== "secret") {
+        throw new ConfigurationError("secret_key_required", "This call needs a secret key and belongs on your backend.");
+      }
+      if (this.#externalId === null) {
+        throw new ConfigurationError("no_user", "No coach is named. Call initialize(coachId) or setUser(coachId) first.");
+      }
+      return { [EXTERNAL_ID_HEADER]: this.#externalId };
     }
     if (this.keyKind === "secret") {
       if (this.#externalId !== null) return { [EXTERNAL_ID_HEADER]: this.#externalId };

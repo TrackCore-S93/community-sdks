@@ -2,6 +2,7 @@
 library;
 
 import 'api/apis.dart';
+import 'api/coach_chat_api.dart';
 import 'api/live_api.dart';
 import 'api/live_socket_types.dart';
 import 'api/media_api.dart';
@@ -30,6 +31,7 @@ final class CommunityClient {
         reports = ReportsApi(_transport),
         archive = ArchiveApi(_transport),
         notifications = NotificationsApi(_transport),
+        coachChat = CoachChatApi(_transport),
         push = PushApi(_transport),
         settings = SettingsApi(_transport),
         live = LiveApi(_transport, liveSocket);
@@ -152,6 +154,9 @@ final class CommunityClient {
 
   /// Notifications.
   final NotificationsApi notifications;
+
+  /// The coaching chat: a member's one-to-one chat with their coach.
+  final CoachChatApi coachChat;
 
   /// Push notifications to the phone.
   final PushApi push;
@@ -340,6 +345,9 @@ final class Community {
 
   /// Notifications.
   NotificationsApi get notifications => client.notifications;
+
+  /// The coaching chat: a member's one-to-one chat with their coach.
+  CoachChatApi get coachChat => client.coachChat;
 
   /// Push notifications to the phone.
   PushApi get push => client.push;

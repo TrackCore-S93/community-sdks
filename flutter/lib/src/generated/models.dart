@@ -644,7 +644,7 @@ final class Post {
   /// How many comments and replies the post has.
   final int commentsCount;
 
-  /// True when the user the call acts for wrote it.
+  /// True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach.
   final bool isMine;
 
   /// True when the creator has pinned it.
@@ -828,7 +828,7 @@ final class Comment {
   /// How many replies it has.
   final int repliesCount;
 
-  /// True when the user the call acts for wrote it.
+  /// True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach.
   final bool isMine;
 
   /// When it was written.
@@ -1618,6 +1618,352 @@ final class RemovedByThreshold {
   final int comments;
 }
 
+/// A member's coaching chat at a glance.
+final class CoachChat {
+  /// Builds a [CoachChat]. Normally it comes from the API.
+  const CoachChat({
+    required this.unreadCount,
+    this.lastMessageAt,
+  });
+
+  /// Reads a [CoachChat] from the API's JSON.
+  factory CoachChat.fromJson(Map<String, Object?> json) => CoachChat(
+        unreadCount: (json['unread_count'] as num).toInt(),
+        lastMessageAt: json['last_message_at'] == null
+            ? null
+            : DateTime.parse(json['last_message_at'] as String),
+      );
+
+  /// How many messages from the other side have not been seen: the coach's, for the member; the member's, when the coach's side asks.
+  final int unreadCount;
+
+  /// When the last message was sent, or null while the chat is empty.
+  final DateTime? lastMessageAt;
+}
+
+/// One page of the coach's list of chats, newest activity first.
+final class CoachChatList {
+  /// Builds a [CoachChatList]. Normally it comes from the API.
+  const CoachChatList({
+    required this.chats,
+    this.nextCursor,
+    required this.hasMore,
+  });
+
+  /// Reads a [CoachChatList] from the API's JSON.
+  factory CoachChatList.fromJson(Map<String, Object?> json) => CoachChatList(
+        chats: (json['chats'] as List)
+            .map((e) =>
+                CoachChatRow.fromJson((e as Map).cast<String, Object?>()))
+            .toList(growable: false),
+        nextCursor: json['next_cursor'] as String?,
+        hasMore: json['has_more'] as bool,
+      );
+
+  /// The chats on this page.
+  final List<CoachChatRow> chats;
+
+  /// Send as `before` for the next page. Null at the end.
+  final String? nextCursor;
+
+  /// True when there are more chats after this page.
+  final bool hasMore;
+}
+
+/// One member's chat in the coach's list.
+final class CoachChatRow {
+  /// Builds a [CoachChatRow]. Normally it comes from the API.
+  const CoachChatRow({
+    required this.member,
+    required this.unreadCount,
+    required this.lastMessageAt,
+    required this.lastMessage,
+  });
+
+  /// Reads a [CoachChatRow] from the API's JSON.
+  factory CoachChatRow.fromJson(Map<String, Object?> json) => CoachChatRow(
+        member:
+            Author.fromJson((json['member'] as Map).cast<String, Object?>()),
+        unreadCount: (json['unread_count'] as num).toInt(),
+        lastMessageAt: DateTime.parse(json['last_message_at'] as String),
+        lastMessage: CoachLastMessage.fromJson(
+            (json['last_message'] as Map).cast<String, Object?>()),
+      );
+
+  /// Whose chat it is. The username is empty for someone who has not joined the community.
+  final Author member;
+
+  /// How many of the member's messages the coach's side has not seen.
+  final int unreadCount;
+
+  /// When the newest message was sent, by either side.
+  final DateTime lastMessageAt;
+
+  /// The newest message, for the preview line.
+  final CoachLastMessage lastMessage;
+}
+
+/// The preview of a chat's newest message.
+final class CoachLastMessage {
+  /// Builds a [CoachLastMessage]. Normally it comes from the API.
+  const CoachLastMessage({
+    required this.id,
+    required this.body,
+    required this.fromCoach,
+    required this.imagesCount,
+    required this.filesCount,
+  });
+
+  /// Reads a [CoachLastMessage] from the API's JSON.
+  factory CoachLastMessage.fromJson(Map<String, Object?> json) =>
+      CoachLastMessage(
+        id: json['id'] as String,
+        body: json['body'] as String,
+        fromCoach: json['from_coach'] as bool,
+        imagesCount: (json['images_count'] as num).toInt(),
+        filesCount: (json['files_count'] as num).toInt(),
+      );
+
+  /// The message's id.
+  final String id;
+
+  /// Its text. May be empty when it has images or files.
+  final String body;
+
+  /// True when the coach's side wrote it.
+  final bool fromCoach;
+
+  /// How many pictures it has.
+  final int imagesCount;
+
+  /// How many voice notes and documents it has.
+  final int filesCount;
+}
+
+/// One message in a coaching chat.
+final class CoachMessage {
+  /// Builds a [CoachMessage]. Normally it comes from the API.
+  const CoachMessage({
+    required this.id,
+    this.author,
+    required this.fromCoach,
+    required this.body,
+    required this.images,
+    required this.files,
+    required this.isMine,
+    required this.isRead,
+    this.editedAt,
+    required this.createdAt,
+  });
+
+  /// Reads a [CoachMessage] from the API's JSON.
+  factory CoachMessage.fromJson(Map<String, Object?> json) => CoachMessage(
+        id: json['id'] as String,
+        author: json['author'] == null
+            ? null
+            : Author.fromJson((json['author'] as Map).cast<String, Object?>()),
+        fromCoach: json['from_coach'] as bool,
+        body: json['body'] as String,
+        images: (json['images'] as List)
+            .map((e) =>
+                CommunityImage.fromJson((e as Map).cast<String, Object?>()))
+            .toList(growable: false),
+        files: (json['files'] as List)
+            .map((e) => CoachFile.fromJson((e as Map).cast<String, Object?>()))
+            .toList(growable: false),
+        isMine: json['is_mine'] as bool,
+        isRead: json['is_read'] as bool,
+        editedAt: json['edited_at'] == null
+            ? null
+            : DateTime.parse(json['edited_at'] as String),
+        createdAt: DateTime.parse(json['created_at'] as String),
+      );
+
+  /// The message's id.
+  final String id;
+
+  /// Who wrote it. Null once that person's account has been erased; the message stays. The username is empty for someone who has not joined the community.
+  final Author? author;
+
+  /// Which side wrote it: true for the coach's side, false for the member.
+  final bool fromCoach;
+
+  /// The text. May be empty when the message has images or files.
+  final String body;
+
+  /// The message's pictures.
+  final List<CommunityImage> images;
+
+  /// The voice notes and documents on it. Only the coach's side sends them; a member's message has none.
+  final List<CoachFile> files;
+
+  /// True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach.
+  final bool isMine;
+
+  /// True when the other side of the chat has seen it. On the member's own message, the coach has read it; on the coach's, the member has.
+  final bool isRead;
+
+  /// When the text was last changed, or null if it never was.
+  final DateTime? editedAt;
+
+  /// When it was sent.
+  final DateTime createdAt;
+}
+
+/// One page of a coaching chat, oldest first.
+final class CoachMessagePage {
+  /// Builds a [CoachMessagePage]. Normally it comes from the API.
+  const CoachMessagePage({
+    required this.messages,
+    this.olderCursor,
+    this.newerCursor,
+    required this.hasOlder,
+    required this.hasNewer,
+  });
+
+  /// Reads a [CoachMessagePage] from the API's JSON.
+  factory CoachMessagePage.fromJson(Map<String, Object?> json) =>
+      CoachMessagePage(
+        messages: (json['messages'] as List)
+            .map((e) =>
+                CoachMessage.fromJson((e as Map).cast<String, Object?>()))
+            .toList(growable: false),
+        olderCursor: json['older_cursor'] as String?,
+        newerCursor: json['newer_cursor'] as String?,
+        hasOlder: json['has_older'] as bool,
+        hasNewer: json['has_newer'] as bool,
+      );
+
+  /// The messages on this page.
+  final List<CoachMessage> messages;
+
+  /// Send as `before` for the messages above these. Null when the page is empty.
+  final String? olderCursor;
+
+  /// Send as `after` for the messages below these, including ones that arrive later. Null when the page is empty.
+  final String? newerCursor;
+
+  /// True when there are messages before this page.
+  final bool hasOlder;
+
+  /// True when there are messages after this page.
+  final bool hasNewer;
+}
+
+/// A voice note or a document on a coaching-chat message.
+final class CoachFile {
+  /// Builds a [CoachFile]. Normally it comes from the API.
+  const CoachFile({
+    required this.id,
+    required this.kind,
+    required this.name,
+    required this.contentType,
+    this.bytes,
+    this.durationMs,
+    this.url,
+  });
+
+  /// Reads a [CoachFile] from the API's JSON.
+  factory CoachFile.fromJson(Map<String, Object?> json) => CoachFile(
+        id: json['id'] as String,
+        kind: json['kind'] as String,
+        name: json['name'] as String,
+        contentType: json['content_type'] as String,
+        bytes: (json['bytes'] as num?)?.toInt(),
+        durationMs: (json['duration_ms'] as num?)?.toInt(),
+        url: json['url'] as String?,
+      );
+
+  /// The file's id.
+  final String id;
+
+  /// `voice` is a voice note, to play. `file` is a document, to open or save.
+  final String kind;
+
+  /// What the sender called the file.
+  final String name;
+
+  /// The file's type.
+  final String contentType;
+
+  /// The file's size in bytes. Null until the upload is finished.
+  final int? bytes;
+
+  /// A voice note's length in milliseconds, when the sender gave it. Null otherwise.
+  final int? durationMs;
+
+  /// A short-lived link to the file. Null until the upload is finished.
+  final String? url;
+}
+
+/// A started file upload: where to send the bytes.
+final class CoachFileUpload {
+  /// Builds a [CoachFileUpload]. Normally it comes from the API.
+  const CoachFileUpload({
+    required this.id,
+    required this.kind,
+    required this.name,
+    required this.upload,
+    required this.maxBytes,
+  });
+
+  /// Reads a [CoachFileUpload] from the API's JSON.
+  factory CoachFileUpload.fromJson(Map<String, Object?> json) =>
+      CoachFileUpload(
+        id: json['id'] as String,
+        kind: json['kind'] as String,
+        name: json['name'] as String,
+        upload: UploadTarget.fromJson(
+            (json['upload'] as Map).cast<String, Object?>()),
+        maxBytes: (json['max_bytes'] as num).toInt(),
+      );
+
+  /// The file's id, used to finish the upload and to put the file on a message.
+  final String id;
+
+  /// What was asked for.
+  final String kind;
+
+  /// The file's name.
+  final String name;
+
+  /// Where and how to send the file.
+  final UploadTarget upload;
+
+  /// The largest file accepted, in bytes.
+  final int maxBytes;
+}
+
+/// One page of chat search results, newest first.
+final class CoachSearchResults {
+  /// Builds a [CoachSearchResults]. Normally it comes from the API.
+  const CoachSearchResults({
+    required this.messages,
+    this.nextCursor,
+    required this.hasMore,
+  });
+
+  /// Reads a [CoachSearchResults] from the API's JSON.
+  factory CoachSearchResults.fromJson(Map<String, Object?> json) =>
+      CoachSearchResults(
+        messages: (json['messages'] as List)
+            .map((e) =>
+                CoachMessage.fromJson((e as Map).cast<String, Object?>()))
+            .toList(growable: false),
+        nextCursor: json['next_cursor'] as String?,
+        hasMore: json['has_more'] as bool,
+      );
+
+  /// The matching messages.
+  final List<CoachMessage> messages;
+
+  /// Send as `before` for the next page. Null at the end.
+  final String? nextCursor;
+
+  /// True when there is another page.
+  final bool hasMore;
+}
+
 /// A registered phone.
 final class PushDevice {
   /// Builds a [PushDevice]. Normally it comes from the API.
@@ -1732,8 +2078,10 @@ final class LiveEvent {
   const LiveEvent({
     required this.type,
     this.topicId,
-    required this.postId,
+    this.postId,
     this.commentId,
+    this.messageId,
+    this.memberExternalId,
     this.parentId,
     this.kind,
     this.authorExternalId,
@@ -1745,8 +2093,10 @@ final class LiveEvent {
   factory LiveEvent.fromJson(Map<String, Object?> json) => LiveEvent(
         type: LiveEventType.fromWire(json['type'] as String?),
         topicId: json['topic_id'] as String?,
-        postId: json['post_id'] as String,
+        postId: json['post_id'] as String?,
         commentId: json['comment_id'] as String?,
+        messageId: json['message_id'] as String?,
+        memberExternalId: json['member_external_id'] as String?,
         parentId: json['parent_id'] as String?,
         kind: json['kind'] == null
             ? null
@@ -1767,11 +2117,17 @@ final class LiveEvent {
   /// The topic concerned. Absent on `notification.created`.
   final String? topicId;
 
-  /// The post concerned.
-  final String postId;
+  /// The post concerned. Absent on coaching-chat events.
+  final String? postId;
 
   /// The comment concerned, for comment events.
   final String? commentId;
+
+  /// The chat message concerned, on `coach_message` events.
+  final String? messageId;
+
+  /// Whose chat a coaching-chat event is about. Sent only to the coach's side: a connection made with a secret key, for the backend or naming a coach or the creator.
+  final String? memberExternalId;
 
   /// The comment it replies to, when it is a reply.
   final String? parentId;
@@ -1779,7 +2135,7 @@ final class LiveEvent {
   /// What the notification is about, on `notification.created`.
   final NotificationKind? kind;
 
-  /// Who wrote the post or comment, for created and deleted events. Never sent for reactions.
+  /// Who wrote the post, comment or chat message, for created, updated and deleted events. Never sent for reactions.
   final String? authorExternalId;
 
   /// The full new list, for a reactions event. Empty when the last one was removed.
@@ -1916,6 +2272,11 @@ enum LiveEventType {
   commentDeleted('comment.deleted'),
   commentReactions('comment.reactions'),
   notificationCreated('notification.created'),
+  coachMessageCreated('coach_message.created'),
+  coachMessageUpdated('coach_message.updated'),
+  coachMessageDeleted('coach_message.deleted'),
+  coachChatRead('coach_chat.read'),
+  coachChatMemberRead('coach_chat.member_read'),
 
   /// A value this version of the SDK does not know. The API may add values.
   unknown('');

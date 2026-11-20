@@ -5,6 +5,7 @@ import {
   ArchiveAPI, AuthAPI, BlocksAPI, CommentsAPI, CommunityAPI, MembersAPI, NotificationsAPI, PostsAPI, PushAPI, ReportsAPI, SettingsAPI,
   TopicsAPI, UsersAPI,
 } from "./api.js";
+import { CoachChatAPI } from "./coachchat.js";
 import { LiveAPI } from "./live.js";
 import { MediaAPI } from "./media.js";
 import { ReactionsAPI } from "./reactions.js";
@@ -157,6 +158,8 @@ export class Community {
   get archive(): ArchiveAPI { return this.#ready.apis.archive; }
   /** Notifications. */
   get notifications(): NotificationsAPI { return this.#ready.apis.notifications; }
+  /** The coaching chat: a member's one-to-one chat with their coach. */
+  get coachChat(): CoachChatAPI { return this.#ready.apis.coachChat; }
   /** Push notifications to the phone. */
   get push(): PushAPI { return this.#ready.apis.push; }
   /** The creator's settings. */
@@ -187,6 +190,7 @@ function buildAPIs(transport: Transport, options: CommunityOptions) {
     reports: new ReportsAPI(transport),
     archive: new ArchiveAPI(transport),
     notifications: new NotificationsAPI(transport),
+    coachChat: new CoachChatAPI(transport, transport.fetch),
     push: new PushAPI(transport),
     settings: new SettingsAPI(transport),
     live: new LiveAPI(transport, options.webSocket),

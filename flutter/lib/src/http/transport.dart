@@ -25,7 +25,16 @@ final RegExp _sessionShape = RegExp(r'^cm_st_[A-Za-z0-9_-]{43}$');
 const Duration _renewWithin = Duration(minutes: 1);
 
 /// Who a request acts for, which decides the headers it carries.
-enum Audience { anyKey, member, creator, memberOrCreator }
+enum Audience {
+  anyKey,
+  member,
+  creator,
+
+  /// The creator's backend acting as one named member: a secret key, and a
+  /// user set with `setUser`.
+  coach,
+  memberOrCreator,
+}
 
 /// `live` or `test`, from the key.
 enum CommunityEnvironment { live, test }
@@ -283,6 +292,19 @@ final class Transport {
               'This call needs a secret key and belongs on your backend.');
         }
         return const {};
+      case Audience.coach:
+        if (keyKind != CommunityKeyKind.secret) {
+          throw const CommunityConfigurationException(
+              CommunityConfigurationReason.secretKeyRequired,
+              'This call needs a secret key and belongs on your backend.');
+        }
+        final coach = _externalId;
+        if (coach == null) {
+          throw const CommunityConfigurationException(
+              CommunityConfigurationReason.noUser,
+              'No coach is named. Call setUser(coachId) first.');
+        }
+        return {communityExternalIdHeader: coach};
       case Audience.member:
       case Audience.memberOrCreator:
         break;
