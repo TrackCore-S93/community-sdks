@@ -3,7 +3,7 @@ description: >-
   The Community client for Flutter and Dart. Typed, null-safe access to the
   Community API: topics, posts, comments, reactions, notifications and live
   updates. Pure Dart, zero dependencies.
-version: 0.1.0
+version: 0.1.1
 repository: https://github.com/TrackCore-S93/community-sdks/tree/main/flutter
 documentation: https://community.trackcore.app/developer/sdk/flutter/
 publish_to: none

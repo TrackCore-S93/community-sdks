@@ -19,8 +19,8 @@ TypeScript and React Native are installed from this repository's releases;
 npm cannot install a package from a folder of a git repository.
 
 ```sh
-npm install https://github.com/TrackCore-S93/community-sdks/releases/download/typescript-v0.1.0/trackcore-community-sdk-0.1.0.tgz
-npm install https://github.com/TrackCore-S93/community-sdks/releases/download/react-native-v0.1.0/trackcore-community-react-native-0.1.0.tgz
+npm install https://github.com/TrackCore-S93/community-sdks/releases/download/typescript-v0.1.1/trackcore-community-sdk-0.1.1.tgz
+npm install https://github.com/TrackCore-S93/community-sdks/releases/download/react-native-v0.1.1/trackcore-community-react-native-0.1.1.tgz
 ```
 
 Flutter is installed from the `flutter` folder:
@@ -30,14 +30,14 @@ dependencies:
   trackcore_community:
     git:
       url: https://github.com/TrackCore-S93/community-sdks.git
-      ref: flutter-v0.1.0
+      ref: flutter-v0.1.1
       path: flutter
 ```
 
 ## Releases
 
-One tag per package and version: `typescript-v0.1.0`, `react-native-v0.1.0`,
-`react-native-capture-v0.1.0`, `flutter-v0.1.0`, `flutter-capture-v0.1.0`. The two npm packages are attached to their release as the
+One tag per package and version: `typescript-v0.1.1`, `react-native-v0.1.1`,
+`react-native-capture-v0.1.0`, `flutter-v0.1.1`, `flutter-capture-v0.1.1`. The two npm packages are attached to their release as the
 file `npm pack` produces.
 
 ## Developing

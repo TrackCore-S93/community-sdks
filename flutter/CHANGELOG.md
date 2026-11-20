@@ -1,3 +1,13 @@
+## 0.1.1
+
+- `coachChat`: the coaching chat, a member's one-to-one chat with their
+  coach. For the member: `get`, `messages`, `send`, `edit`, `delete`,
+  `markRead`, `search`. For the coach's side, with a secret key on a Dart
+  server: `chats`, `memberMessages`, `markMemberRead`, `uploadFile`
+  (`startFile`, `completeFile`) and `sendAsCoach`.
+- Live events for the chat: `coach_message.created`, `.updated`, `.deleted`
+  and `coach_chat.read`.
+
 ## 0.1.0
 
 The first version: every route of the Community API, sign-in with a

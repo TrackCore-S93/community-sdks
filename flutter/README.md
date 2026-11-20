@@ -39,7 +39,7 @@ dependencies:
   trackcore_community:
     git:
       url: https://github.com/TrackCore-S93/community-sdks.git
-      ref: flutter-v0.1.0
+      ref: flutter-v0.1.1
       path: flutter
 ```
 
