@@ -18,4 +18,4 @@ export { ERROR_CODE_SPECS } from "./generated/errors.js";
 export type * from "./generated/types.js";
 
 /** The version of this SDK. */
-export const SDK_VERSION = "0.1.1";
+export const SDK_VERSION = "0.1.2";

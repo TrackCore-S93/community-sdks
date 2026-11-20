@@ -23,12 +23,12 @@ dependencies:
   trackcore_community:
     git:
       url: https://github.com/TrackCore-S93/community-sdks.git
-      ref: flutter-v0.1.2
+      ref: flutter-v0.1.3
       path: flutter
   trackcore_community_capture:
     git:
       url: https://github.com/TrackCore-S93/community-sdks.git
-      ref: flutter-capture-v0.1.2
+      ref: flutter-capture-v0.1.3
       path: flutter-capture
 ```
 

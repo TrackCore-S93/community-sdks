@@ -5,4 +5,4 @@ export * from "@trackcore/community-sdk";
 export { Community, createCommunityClient, type CommunityDeviceOptions, type DeviceFile, type DeviceMediaAPI } from "./client.js";
 
 /** The version of this SDK. */
-export const REACT_NATIVE_SDK_VERSION = "0.1.1";
+export const REACT_NATIVE_SDK_VERSION = "0.1.2";

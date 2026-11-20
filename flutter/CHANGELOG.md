@@ -1,3 +1,10 @@
+## 0.1.3
+
+- A message from the user's coach is now a notification too:
+  `NotificationKind.coachMessage`, with `messageId` and `messageExcerpt` on
+  `CommunityNotification`. Its `postId` is empty. Reading the chat marks it
+  read.
+
 ## 0.1.2
 
 - Fixed: coaching-chat events never reached `live.connect().events`. The

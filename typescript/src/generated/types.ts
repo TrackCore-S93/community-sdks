@@ -598,7 +598,7 @@ export interface ArchiveList {
   next_cursor: string | null;
 }
 
-/** One member being told what another did to what they wrote. */
+/** One member being told what another did to what they wrote, or that their coach wrote to them. */
 export interface Notification {
   /** The notification's id. */
   id: string;
@@ -606,7 +606,7 @@ export interface Notification {
   kind: NotificationKind;
   /** Who did it. */
   actor: NotificationActor;
-  /** The post concerned: open this. */
+  /** The post concerned: open this. Empty for `coach_message`, which concerns no post. */
   post_id: string;
   /** The comment reacted to, or the new comment. Null for a reaction on a post. */
   comment_id: string | null;
@@ -614,10 +614,14 @@ export interface Notification {
   parent_comment_id: string | null;
   /** The emoji, for a reaction. Null otherwise. */
   emoji: string | null;
-  /** The start of the post's text. */
+  /** The start of the post's text. Empty for `coach_message`. */
   post_excerpt: string;
   /** The start of the comment's text, when there is a comment. */
   comment_excerpt: string | null;
+  /** For `coach_message`: the newest message from the coach. Open the coaching chat. Null for every other kind. */
+  message_id: string | null;
+  /** For `coach_message`: the start of the message's text, empty when it carries only pictures or files. Null for every other kind. */
+  message_excerpt: string | null;
   /** True until the member opens it or marks all read. */
   unread: boolean;
   /** When it happened. */
@@ -938,11 +942,11 @@ export interface LiveEvent {
   type: LiveEventType;
   /** The topic concerned. Absent on `notification.created`. */
   topic_id?: string;
-  /** The post concerned. Absent on coaching-chat events. */
+  /** The post concerned. Absent on coaching-chat events and on `notification.created` for a coach's message. */
   post_id?: string;
   /** The comment concerned, for comment events. */
   comment_id?: string;
-  /** The chat message concerned, on `coach_message` events. */
+  /** The chat message concerned, on `coach_message` events, and on `notification.created` for a coach's message. */
   message_id?: string;
   /** Whose chat a coaching-chat event is about. Sent only to the coach's side: a connection made with a secret key, for the backend or naming a coach or the creator. */
   member_external_id?: string;
@@ -979,7 +983,7 @@ export type ReactionOrder = "most_used" | "first_added";
 export type MediaStatus = "pending" | "ready" | "failed";
 
 /** What a notification is about. */
-export type NotificationKind = "post_reaction" | "comment_reaction" | "post_comment" | "comment_reply";
+export type NotificationKind = "post_reaction" | "comment_reaction" | "post_comment" | "comment_reply" | "coach_message";
 
 /** The kinds of live message. */
 export type LiveEventType = "post.created" | "post.deleted" | "post.pinned" | "post.unpinned" | "post.reactions" | "comment.created" | "comment.deleted" | "comment.reactions" | "notification.created" | "coach_message.created" | "coach_message.updated" | "coach_message.deleted" | "coach_chat.read" | "coach_chat.member_read";

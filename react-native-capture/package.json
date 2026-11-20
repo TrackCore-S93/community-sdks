@@ -35,8 +35,8 @@
     "expo-image-picker": { "optional": true }
   },
   "devDependencies": {
-    "@trackcore/community-react-native": "file:../react-native/trackcore-community-react-native-0.1.1.tgz",
-    "@trackcore/community-sdk": "file:../typescript/trackcore-community-sdk-0.1.1.tgz",
+    "@trackcore/community-react-native": "file:../react-native/trackcore-community-react-native-0.1.2.tgz",
+    "@trackcore/community-sdk": "file:../typescript/trackcore-community-sdk-0.1.2.tgz",
     "@types/node": "^22.10.0",
     "typescript": "^5.7.0"
   }

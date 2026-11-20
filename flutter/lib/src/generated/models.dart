@@ -1353,7 +1353,7 @@ final class ArchiveList {
   final String? nextCursor;
 }
 
-/// One member being told what another did to what they wrote.
+/// One member being told what another did to what they wrote, or that their coach wrote to them.
 final class CommunityNotification {
   /// Builds a [CommunityNotification]. Normally it comes from the API.
   const CommunityNotification({
@@ -1366,6 +1366,8 @@ final class CommunityNotification {
     this.emoji,
     required this.postExcerpt,
     this.commentExcerpt,
+    this.messageId,
+    this.messageExcerpt,
     required this.unread,
     required this.createdAt,
   });
@@ -1383,6 +1385,8 @@ final class CommunityNotification {
         emoji: json['emoji'] as String?,
         postExcerpt: json['post_excerpt'] as String,
         commentExcerpt: json['comment_excerpt'] as String?,
+        messageId: json['message_id'] as String?,
+        messageExcerpt: json['message_excerpt'] as String?,
         unread: json['unread'] as bool,
         createdAt: DateTime.parse(json['created_at'] as String),
       );
@@ -1396,7 +1400,7 @@ final class CommunityNotification {
   /// Who did it.
   final NotificationActor actor;
 
-  /// The post concerned: open this.
+  /// The post concerned: open this. Empty for `coach_message`, which concerns no post.
   final String postId;
 
   /// The comment reacted to, or the new comment. Null for a reaction on a post.
@@ -1408,11 +1412,17 @@ final class CommunityNotification {
   /// The emoji, for a reaction. Null otherwise.
   final String? emoji;
 
-  /// The start of the post's text.
+  /// The start of the post's text. Empty for `coach_message`.
   final String postExcerpt;
 
   /// The start of the comment's text, when there is a comment.
   final String? commentExcerpt;
+
+  /// For `coach_message`: the newest message from the coach. Open the coaching chat. Null for every other kind.
+  final String? messageId;
+
+  /// For `coach_message`: the start of the message's text, empty when it carries only pictures or files. Null for every other kind.
+  final String? messageExcerpt;
 
   /// True until the member opens it or marks all read.
   final bool unread;
@@ -2117,13 +2127,13 @@ final class LiveEvent {
   /// The topic concerned. Absent on `notification.created`.
   final String? topicId;
 
-  /// The post concerned. Absent on coaching-chat events.
+  /// The post concerned. Absent on coaching-chat events and on `notification.created` for a coach's message.
   final String? postId;
 
   /// The comment concerned, for comment events.
   final String? commentId;
 
-  /// The chat message concerned, on `coach_message` events.
+  /// The chat message concerned, on `coach_message` events, and on `notification.created` for a coach's message.
   final String? messageId;
 
   /// Whose chat a coaching-chat event is about. Sent only to the coach's side: a connection made with a secret key, for the backend or naming a coach or the creator.
@@ -2246,6 +2256,7 @@ enum NotificationKind {
   commentReaction('comment_reaction'),
   postComment('post_comment'),
   commentReply('comment_reply'),
+  coachMessage('coach_message'),
 
   /// A value this version of the SDK does not know. The API may add values.
   unknown('');

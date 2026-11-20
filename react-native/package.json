@@ -1,6 +1,6 @@
 {
   "name": "@trackcore/community-react-native",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "The Community client for React Native and Expo. Built on the JavaScript SDK; no native code of its own.",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
@@ -29,13 +29,13 @@
     "pack:release": "npm test && npm pack"
   },
   "peerDependencies": {
-    "@trackcore/community-sdk": ">=0.1.1 <0.2.0"
+    "@trackcore/community-sdk": ">=0.1.2 <0.2.0"
   },
   "peerDependenciesMeta": {
     "@trackcore/community-sdk": { "optional": true }
   },
   "devDependencies": {
-    "@trackcore/community-sdk": "file:../typescript/trackcore-community-sdk-0.1.1.tgz",
+    "@trackcore/community-sdk": "file:../typescript/trackcore-community-sdk-0.1.2.tgz",
     "@types/node": "^22.10.0",
     "typescript": "^5.7.0"
   }

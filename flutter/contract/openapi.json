@@ -6886,7 +6886,7 @@
      "Push"
     ],
     "summary": "Register a phone for push notifications",
-    "description": "Stores the phone's push token for the user. The token is an Expo push token or a Firebase Cloud Messaging token; the kind is worked out from its form unless `provider` says. Registering the same token again changes nothing. A token registered by another user of the same community moves to this one.\n\nFrom then on each notification is also sent to the phone, with `data` for opening the right screen: `type` (`community.notification`), `notification_id`, `kind`, `post_id` and, when there is a comment, `comment_id` and `parent_comment_id`.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`.",
+    "description": "Stores the phone's push token for the user. The token is an Expo push token or a Firebase Cloud Messaging token; the kind is worked out from its form unless `provider` says. Registering the same token again changes nothing. A token registered by another user of the same community moves to this one.\n\nFrom then on each notification is also sent to the phone, with `data` for opening the right screen: `type` (`community.notification`), `notification_id`, `kind`, `post_id` and, when there is a comment, `comment_id` and `parent_comment_id`. A message from the member's coach is a notification too, of kind `coach_message`; its `data` has `type` (`community.coach_message`), `notification_id`, `kind` and `message_id`: open the coaching chat. Its title is the coach's username and its text is the message, or what was sent when it has no text.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`.",
     "x-community-auth": "member",
     "x-community-sdk": "push.register",
     "parameters": [
@@ -8501,7 +8501,7 @@
      "Notifications"
     ],
     "summary": "The user's notifications",
-    "description": "Newest first. Notifications across a block, or about hidden topics, are left out.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`.",
+    "description": "Newest first. Notifications across a block, or about hidden topics, are left out. A message from the member's coach is in the list too, as kind `coach_message`, with `message_id` instead of a post. There is one such row for the chat, not one per message: a new message replaces it, with the newest message and a new `id`. Reading the coaching chat marks it read.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`.",
     "x-community-auth": "member",
     "x-community-sdk": "notifications.list",
     "parameters": [
@@ -11316,7 +11316,7 @@
    },
    "Notification": {
     "type": "object",
-    "description": "One member being told what another did to what they wrote.",
+    "description": "One member being told what another did to what they wrote, or that their coach wrote to them.",
     "x-go-type": "httpx.notificationBody",
     "required": [
      "id",
@@ -11328,6 +11328,8 @@
      "emoji",
      "post_excerpt",
      "comment_excerpt",
+     "message_id",
+     "message_excerpt",
      "unread",
      "created_at"
     ],
@@ -11355,7 +11357,7 @@
      },
      "post_id": {
       "type": "string",
-      "description": "The post concerned: open this.",
+      "description": "The post concerned: open this. Empty for `coach_message`, which concerns no post.",
       "example": "cm_post_…"
      },
      "comment_id": {
@@ -11382,7 +11384,7 @@
      },
      "post_excerpt": {
       "type": "string",
-      "description": "The start of the post's text.",
+      "description": "The start of the post's text. Empty for `coach_message`.",
       "example": "Leg day"
      },
      "comment_excerpt": {
@@ -11391,6 +11393,21 @@
        "null"
       ],
       "description": "The start of the comment's text, when there is a comment."
+     },
+     "message_id": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "For `coach_message`: the newest message from the coach. Open the coaching chat. Null for every other kind.",
+      "example": "cm_msg_…"
+     },
+     "message_excerpt": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "For `coach_message`: the start of the message's text, empty when it carries only pictures or files. Null for every other kind."
      },
      "unread": {
       "type": "boolean",
@@ -12370,7 +12387,7 @@
      },
      "post_id": {
       "type": "string",
-      "description": "The post concerned. Absent on coaching-chat events.",
+      "description": "The post concerned. Absent on coaching-chat events and on `notification.created` for a coach's message.",
       "example": "cm_post_…"
      },
      "comment_id": {
@@ -12379,7 +12396,7 @@
      },
      "message_id": {
       "type": "string",
-      "description": "The chat message concerned, on `coach_message` events.",
+      "description": "The chat message concerned, on `coach_message` events, and on `notification.created` for a coach's message.",
       "example": "cm_msg_…"
      },
      "member_external_id": {
@@ -12478,7 +12495,8 @@
      "post_reaction",
      "comment_reaction",
      "post_comment",
-     "comment_reply"
+     "comment_reply",
+     "coach_message"
     ]
    },
    "LiveEventType": {
