@@ -104,3 +104,5 @@ export async function captureImageWith(picker: ImagePicker, options: CaptureOpti
 export function createCapture(picker: ImagePicker): (options: CaptureOptions) => Promise<Media | null> {
   return (options) => captureImageWith(picker, options);
 }
+
+export * from "./attachments.js";

@@ -21,7 +21,7 @@ It is installed from this repository's releases, beside the two packages it
 builds on, and it uses `expo-image-picker` to open the camera and the gallery.
 
 ```sh
-npm install https://github.com/TrackCore-S93/community-sdks/releases/download/react-native-capture-v0.1.0/trackcore-community-react-native-capture-0.1.0.tgz
+npm install https://github.com/TrackCore-S93/community-sdks/releases/download/react-native-capture-v0.1.1/trackcore-community-react-native-capture-0.1.1.tgz
 npx expo install expo-image-picker
 ```
 
@@ -119,6 +119,25 @@ export const captureImage = createCapture({
   },
 });
 ```
+
+## Files and voice notes
+
+For the coaching chat, two more entries pick a file and record a voice note, and upload the result. Each names its own Expo library, so install only what the app offers: `npx expo install expo-document-picker expo-av`.
+
+```ts
+import { pickFile } from "@trackcore/community-react-native-capture/files";
+import { VoiceRecorder } from "@trackcore/community-react-native-capture/voice";
+
+const file = await pickFile();                       // null when the user backs out
+if (file) await community.coachChat.send({ fileIds: [file.id] });
+
+const recorder = new VoiceRecorder();
+await recorder.start();                              // asks for the microphone the first time
+const note = await recorder.stop();                  // uploads it; cancel() throws it away
+if (note) await community.coachChat.send({ fileIds: [note.id] });
+```
+
+A member may send these only when the creator allows it: check `coach_chat_files_enabled` and `coach_chat_voice_enabled` in the settings first.
 
 ## Developing
 

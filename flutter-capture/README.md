@@ -87,6 +87,22 @@ try {
 }
 ```
 
+## Files and voice notes
+
+For the coaching chat, the add-on also picks a file and records a voice note, and uploads the result.
+
+```dart
+final file = await pickFile();                       // null when the user backs out
+if (file != null) await community.coachChat.send(fileIds: [file.id]);
+
+final recorder = VoiceRecorder();
+await recorder.start();                              // asks for the microphone the first time
+final note = await recorder.stop();                  // uploads it; cancel() throws it away
+if (note != null) await community.coachChat.send(fileIds: [note.id]);
+```
+
+A member may send these only when the creator allows it: check `coachChatFilesEnabled` and `coachChatVoiceEnabled` in the settings first. Recording needs `NSMicrophoneUsageDescription` in Info.plist and `RECORD_AUDIO` in the Android manifest. The add-on needs iOS 14 or later.
+
 ## Developing
 
 Inside this repository the package builds against the SDK in `../flutter`

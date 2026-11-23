@@ -1,0 +1,6 @@
+{
+  "main": "../dist/cjs/voice.js",
+  "module": "../dist/esm/voice.js",
+  "react-native": "../dist/cjs/voice.js",
+  "types": "../dist/cjs/voice.d.ts"
+}

@@ -56,6 +56,9 @@ enum CommunityErrorCode {
   /// HTTP 403. Viewing other members' profiles is turned off for this community.
   profileViewingDisabled('profile_viewing_disabled', 403, false),
 
+  /// HTTP 403. The coaching chat is turned off for this community.
+  coachChatDisabled('coach_chat_disabled', 403, false),
+
   /// HTTP 409. A topic with this name already exists.
   topicNameTaken('topic_name_taken', 409, false),
 

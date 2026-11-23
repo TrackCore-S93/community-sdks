@@ -1544,6 +1544,9 @@ final class Settings {
     required this.bioMaxLength,
     required this.profileViewingEnabled,
     required this.pushEnabled,
+    required this.coachChatEnabled,
+    required this.coachChatVoiceEnabled,
+    required this.coachChatFilesEnabled,
     required this.maxImageUploadBytes,
     required this.imageUploadsEnabled,
     this.removedByThreshold,
@@ -1561,6 +1564,9 @@ final class Settings {
         bioMaxLength: (json['bio_max_length'] as num).toInt(),
         profileViewingEnabled: json['profile_viewing_enabled'] as bool,
         pushEnabled: json['push_enabled'] as bool,
+        coachChatEnabled: json['coach_chat_enabled'] as bool,
+        coachChatVoiceEnabled: json['coach_chat_voice_enabled'] as bool,
+        coachChatFilesEnabled: json['coach_chat_files_enabled'] as bool,
         maxImageUploadBytes: (json['max_image_upload_bytes'] as num).toInt(),
         imageUploadsEnabled: json['image_uploads_enabled'] as bool,
         removedByThreshold: json['removed_by_threshold'] == null
@@ -1595,6 +1601,15 @@ final class Settings {
 
   /// Notifications are also sent to members' phones.
   final bool pushEnabled;
+
+  /// The coaching chat is offered in this community. While it is off, every coaching-chat route answers `coach_chat_disabled`; the app should not show the chat.
+  final bool coachChatEnabled;
+
+  /// Members may send voice notes in the coaching chat. The app shows its record button only when this is true. The coach's side can always send them.
+  final bool coachChatVoiceEnabled;
+
+  /// Members may send documents in the coaching chat. The app shows its attach-file button only when this is true. The coach's side can always send them.
+  final bool coachChatFilesEnabled;
 
   /// The largest image upload, in bytes. Fixed, not a creator setting.
   final int maxImageUploadBytes;
@@ -1804,7 +1819,7 @@ final class CoachMessage {
   /// The message's pictures.
   final List<CommunityImage> images;
 
-  /// The voice notes and documents on it. Only the coach's side sends them; a member's message has none.
+  /// The voice notes and documents on it. The coach's side can always send them; a member only when the creator allows it.
   final List<CoachFile> files;
 
   /// True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach.

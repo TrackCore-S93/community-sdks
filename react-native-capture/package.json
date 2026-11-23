@@ -1,7 +1,7 @@
 {
   "name": "@trackcore/community-react-native-capture",
-  "version": "0.1.0",
-  "description": "Opens the camera or the gallery and uploads the picture to Community in one call. An add-on to @trackcore/community-react-native.",
+  "version": "0.1.1",
+  "description": "Opens the camera or the gallery, picks a file or records a voice note, and uploads it to Community in one call. An add-on to @trackcore/community-react-native.",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "main": "./dist/cjs/index.js",
@@ -10,16 +10,55 @@
   "types": "./dist/esm/index.d.ts",
   "exports": {
     ".": {
-      "import": { "types": "./dist/esm/index.d.ts", "default": "./dist/esm/index.js" },
-      "require": { "types": "./dist/cjs/index.d.ts", "default": "./dist/cjs/index.js" }
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
     },
     "./core": {
-      "import": { "types": "./dist/esm/core.d.ts", "default": "./dist/esm/core.js" },
-      "require": { "types": "./dist/cjs/core.d.ts", "default": "./dist/cjs/core.js" }
+      "import": {
+        "types": "./dist/esm/core.d.ts",
+        "default": "./dist/esm/core.js"
+      },
+      "require": {
+        "types": "./dist/cjs/core.d.ts",
+        "default": "./dist/cjs/core.js"
+      }
+    },
+    "./files": {
+      "import": {
+        "types": "./dist/esm/files.d.ts",
+        "default": "./dist/esm/files.js"
+      },
+      "require": {
+        "types": "./dist/cjs/files.d.ts",
+        "default": "./dist/cjs/files.js"
+      }
+    },
+    "./voice": {
+      "import": {
+        "types": "./dist/esm/voice.d.ts",
+        "default": "./dist/esm/voice.js"
+      },
+      "require": {
+        "types": "./dist/cjs/voice.d.ts",
+        "default": "./dist/cjs/voice.js"
+      }
     },
     "./package.json": "./package.json"
   },
-  "files": ["dist", "core", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "core",
+    "files",
+    "voice",
+    "README.md",
+    "LICENSE"
+  ],
   "sideEffects": false,
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -28,11 +67,21 @@
     "pack:release": "npm test && npm pack"
   },
   "peerDependencies": {
-    "@trackcore/community-react-native": ">=0.1.0 <0.2.0",
+    "@trackcore/community-react-native": ">=0.1.1 <0.2.0",
+    "expo-av": ">=13.0.0",
+    "expo-document-picker": ">=11.0.0",
     "expo-image-picker": ">=15.0.0"
   },
   "peerDependenciesMeta": {
-    "expo-image-picker": { "optional": true }
+    "expo-av": {
+      "optional": true
+    },
+    "expo-document-picker": {
+      "optional": true
+    },
+    "expo-image-picker": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@trackcore/community-react-native": "file:../react-native/trackcore-community-react-native-0.1.1.tgz",

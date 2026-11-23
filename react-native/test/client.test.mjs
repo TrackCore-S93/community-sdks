@@ -84,6 +84,31 @@ test("a member uses the coaching chat; answering as the coach is not for a devic
   assert.equal(f.calls.length, 3);
 });
 
+test("coachChat.uploadDeviceFile reads a file on the device and uploads it as a voice note", async () => {
+  const bytes = new Uint8Array([1, 2, 3]);
+  const note = { id: "cm_att_1", kind: "voice", name: "note.m4a", content_type: "audio/mp4", bytes: 3, duration_ms: 9000, url: "https://files.test/n" };
+  const f = fakeFetch([
+    session(),
+    () => new Response(new Blob([bytes], { type: "audio/mp4" })),                               // reading file://…
+    json(201, { id: "cm_att_1", kind: "voice", name: "note.m4a", upload: { method: "PUT", url: "https://storage.test/put?sig=1", expires_at: "" }, max_bytes: 100 }),
+    () => new Response(null, { status: 200 }),                                                  // the bucket
+    json(200, note),
+  ]);
+  const client = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch: f.fetch });
+  await client.initialize("ali");
+  const uploaded = await client.coachChat.uploadDeviceFile({ uri: "file:///cache/note.m4a" }, { kind: "voice", fileName: "note.m4a", contentType: "audio/mp4", durationMs: 9000 });
+  assert.equal(uploaded.id, "cm_att_1");
+  const [, read, start, put, complete] = f.calls;
+  assert.equal(read.url, "file:///cache/note.m4a");
+  assert.equal(start.url, `${base}/v1/coach-chat/files`);
+  assert.deepEqual(JSON.parse(start.body), { kind: "voice", file_name: "note.m4a", content_type: "audio/mp4", duration_ms: 9000 });
+  assert.equal(put.url, "https://storage.test/put?sig=1");
+  assert.equal(complete.url, `${base}/v1/coach-chat/files/cm_att_1/complete`);
+  await assert.rejects(client.coachChat.uploadDeviceFile({ uri: "" }, { kind: "voice", fileName: "n.m4a", contentType: "audio/mp4" }), ValidationError);
+  // The rest of the chat is still there.
+  assert.equal(typeof client.coachChat.send, "function");
+});
+
 test("uploadFile reads a file on the device and uploads it", async () => {
   const bytes = new Uint8Array([1, 2, 3, 4]);
   const f = fakeFetch([

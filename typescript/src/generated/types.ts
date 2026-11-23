@@ -684,6 +684,12 @@ export interface Settings {
   profile_viewing_enabled: boolean;
   /** Notifications are also sent to members' phones. */
   push_enabled: boolean;
+  /** The coaching chat is offered in this community. While it is off, every coaching-chat route answers `coach_chat_disabled`; the app should not show the chat. */
+  coach_chat_enabled: boolean;
+  /** Members may send voice notes in the coaching chat. The app shows its record button only when this is true. The coach's side can always send them. */
+  coach_chat_voice_enabled: boolean;
+  /** Members may send documents in the coaching chat. The app shows its attach-file button only when this is true. The coach's side can always send them. */
+  coach_chat_files_enabled: boolean;
   /** The largest image upload, in bytes. Fixed, not a creator setting. */
   max_image_upload_bytes: number;
   /** False when this deployment has no image storage. */
@@ -720,6 +726,12 @@ export interface UpdateSettingsRequest {
   profile_viewing_enabled?: boolean | null;
   /** Whether notifications are also sent to members' phones. */
   push_enabled?: boolean | null;
+  /** Whether the coaching chat is offered. Turning it off refuses every coaching-chat route for members and the coach's side; nothing is deleted, and the chats are there again when it is turned back on. */
+  coach_chat_enabled?: boolean | null;
+  /** Whether members may send voice notes in the coaching chat. Off unless turned on. Turning it off later leaves the voice notes already sent in place. */
+  coach_chat_voice_enabled?: boolean | null;
+  /** Whether members may send documents in the coaching chat. Off unless turned on. Turning it off later leaves the files already sent in place. */
+  coach_chat_files_enabled?: boolean | null;
 }
 
 /** A member's coaching chat at a glance. */
@@ -778,7 +790,7 @@ export interface CoachMessage {
   body: string;
   /** The message's pictures. */
   images: Image[];
-  /** The voice notes and documents on it. Only the coach's side sends them; a member's message has none. */
+  /** The voice notes and documents on it. The coach's side can always send them; a member only when the creator allows it. */
   files: CoachFile[];
   /** True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach. */
   is_mine: boolean;
@@ -868,17 +880,19 @@ export interface SendAsCoachRequest {
   file_ids?: string[];
 }
 
-/** A new chat message: text, images, or both. */
+/** A new chat message: text, images, files, or any mix. */
 export interface SendCoachMessageRequest {
-  /** The text. May be left out when the message has images. */
+  /** The text. May be left out when the message has images or files. */
   body?: string;
   /** Uploaded images, in display order. */
   media_ids?: string[];
+  /** Voice notes and documents the member uploaded with `POST /v1/coach-chat/files`, in order, at most 10. A voice note needs the creator's `coach_chat_voice_enabled`, a document `coach_chat_files_enabled`; without it the message is refused. */
+  file_ids?: string[];
 }
 
 /** The new text of a chat message. */
 export interface EditCoachMessageRequest {
-  /** The text. May be empty only when the message has images. */
+  /** The text. May be empty only when the message has images or files. */
   body?: string;
 }
 
@@ -1019,5 +1033,5 @@ export interface ErrorBody {
 }
 
 /** The closed list of error codes. */
-export type ErrorCode = "invalid_request" | "ambiguous_credentials" | "unauthenticated" | "credential_missing" | "credential_malformed" | "credential_unknown" | "credential_revoked" | "session_invalid" | "user_scope_violation" | "forbidden" | "not_found" | "method_not_allowed" | "conflict" | "username_taken" | "already_joined" | "community_join_required" | "comment_replies_disabled" | "profile_viewing_disabled" | "topic_name_taken" | "media_not_uploaded" | "media_too_large" | "media_invalid" | "payload_too_large" | "validation_failed" | "rate_limited" | "internal_error" | "service_unavailable" | "timeout";
+export type ErrorCode = "invalid_request" | "ambiguous_credentials" | "unauthenticated" | "credential_missing" | "credential_malformed" | "credential_unknown" | "credential_revoked" | "session_invalid" | "user_scope_violation" | "forbidden" | "not_found" | "method_not_allowed" | "conflict" | "username_taken" | "already_joined" | "community_join_required" | "comment_replies_disabled" | "profile_viewing_disabled" | "coach_chat_disabled" | "topic_name_taken" | "media_not_uploaded" | "media_too_large" | "media_invalid" | "payload_too_large" | "validation_failed" | "rate_limited" | "internal_error" | "service_unavailable" | "timeout";
 

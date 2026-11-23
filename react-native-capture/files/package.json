@@ -1,0 +1,6 @@
+{
+  "main": "../dist/cjs/files.js",
+  "module": "../dist/esm/files.js",
+  "react-native": "../dist/cjs/files.js",
+  "types": "../dist/cjs/files.d.ts"
+}

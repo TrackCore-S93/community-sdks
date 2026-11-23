@@ -478,6 +478,12 @@ export interface UpdateSettingsParams extends CallOptions {
   profileViewingEnabled?: boolean;
   /** Whether notifications are also sent to members' phones. */
   pushEnabled?: boolean;
+  /** Whether the coaching chat is offered. Off refuses every coaching-chat call with `coach_chat_disabled`. */
+  coachChatEnabled?: boolean;
+  /** Whether members may send voice notes in the coaching chat. */
+  coachChatVoiceEnabled?: boolean;
+  /** Whether members may send documents in the coaching chat. */
+  coachChatFilesEnabled?: boolean;
 }
 
 /** The creator's settings. */
@@ -500,6 +506,9 @@ export class SettingsAPI extends Namespace {
         search_page_size: changes.searchPageSize, bio_max_length: changes.bioMaxLength,
         profile_viewing_enabled: changes.profileViewingEnabled,
         push_enabled: changes.pushEnabled,
+        coach_chat_enabled: changes.coachChatEnabled,
+        coach_chat_voice_enabled: changes.coachChatVoiceEnabled,
+        coach_chat_files_enabled: changes.coachChatFilesEnabled,
       },
     });
   }

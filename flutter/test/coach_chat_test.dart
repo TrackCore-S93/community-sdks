@@ -142,6 +142,49 @@ void main() {
     expect(adapter.calls, hasLength(5));
   });
 
+  test('a member sends a voice note, when the creator allows it', () async {
+    final (c, adapter) = await member([
+      json(201, {
+        'id': 'cm_att_5',
+        'kind': 'voice',
+        'name': 'note.m4a',
+        'upload': {
+          'method': 'PUT',
+          'url': 'https://bucket.test/put',
+          'expires_at': '2026-11-20T10:15:00Z'
+        },
+        'max_bytes': 100,
+      }),
+      json(200, <String, Object?>{}),
+      json(200, voice),
+      json(201, message(id: 'cm_msg_7', body: '', files: [voice])),
+    ]);
+
+    // The same upload the coach's side uses, with the member's own session.
+    final uploaded = await c.coachChat.uploadFile(Uint8List.fromList([1, 2, 3]),
+        kind: CoachFileKind.voice,
+        fileName: 'note.m4a',
+        contentType: 'audio/mp4',
+        durationMs: 9000);
+    expect(uploaded.kind, 'voice');
+    expect(adapter.calls[0].path, '/v1/coach-chat/files');
+    expect(adapter.calls[0].json, {
+      'kind': 'voice',
+      'file_name': 'note.m4a',
+      'content_type': 'audio/mp4',
+      'duration_ms': 9000
+    });
+    expect(adapter.calls[1].uri.toString(), 'https://bucket.test/put');
+    expect(adapter.calls[2].path, '/v1/coach-chat/files/cm_att_5/complete');
+
+    final sent = await c.coachChat.send(fileIds: [uploaded.id]);
+    expect(sent.files.single.kind, 'voice');
+    expect(adapter.calls[3].path, '/v1/coach-chat/messages');
+    expect(adapter.calls[3].json, {
+      'file_ids': [uploaded.id]
+    });
+  });
+
   test('a member deletes one image from a message', () async {
     final (c, adapter) = await member([
       json(200, {
@@ -191,11 +234,9 @@ void main() {
     final (device, deviceAdapter) = await member([]);
     for (final call in <Future<Object?> Function()>[
       () => device.coachChat.sendAsCoach('ali', body: 'x'),
-      () => device.coachChat.startFile(
-          kind: CoachFileKind.file,
-          fileName: 'a.pdf',
-          contentType: 'application/pdf'),
-      () => device.coachChat.completeFile('cm_att_1'),
+      () => device.coachChat.chats(),
+      () => device.coachChat.memberMessages('ali'),
+      () => device.coachChat.markMemberRead('ali'),
     ]) {
       await expectLater(
           call(),

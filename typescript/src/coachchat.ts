@@ -54,13 +54,14 @@ export interface SendAsCoachParams extends CallOptions {
  * The coaching chat: a member's one-to-one chat with their coach.
  *
  * Every member has one chat; it needs no id and is made by its first
- * message. A member sends text and images. Voice notes and documents come
- * from the coach's side only.
+ * message. A member sends text and images, and voice notes and documents
+ * when the creator allows it (`startFile`, `completeFile`, `uploadFile`).
+ * The coach's side can always send both.
  *
- * `chats`, `memberMessages`, `markMemberRead`, `startFile`, `completeFile`,
- * `uploadFile` and `sendAsCoach` are the coach's side. They need a secret
- * key, and the coach named with `initialize` or `setUser`: a member of the
- * community whose role is `coach` or `creator`.
+ * `chats`, `memberMessages`, `markMemberRead` and `sendAsCoach` are the
+ * coach's side. They need a secret key, and the coach named with
+ * `initialize` or `setUser`: a member of the community whose role is `coach`
+ * or `creator`.
  */
 export class CoachChatAPI {
   constructor(
@@ -85,19 +86,23 @@ export class CoachChatAPI {
   }
 
   /**
-   * Sends a message to the coach: text, images, or both. A retry cannot send
-   * twice: the SDK sends an idempotency key, its own unless you pass one.
-   * Sending also marks the chat read for the member.
+   * Sends a message to the coach: text, images, files, or any mix. A retry
+   * cannot send twice: the SDK sends an idempotency key, its own unless you
+   * pass one. Sending also marks the chat read for the member.
+   *
+   * `fileIds` are voice notes and documents from `uploadFile`. A member may
+   * send them only when the creator allows it: check
+   * `coach_chat_voice_enabled` and `coach_chat_files_enabled` in the settings.
    */
-  send(params: { body?: string; mediaIds?: string[]; idempotencyKey?: string } & CallOptions): Promise<CoachMessage> {
+  send(params: { body?: string; mediaIds?: string[]; fileIds?: string[]; idempotencyKey?: string } & CallOptions): Promise<CoachMessage> {
     return this.transport.request({
       method: "POST", path: "/v1/coach-chat/messages", audience: "member", signal: params.signal,
       idempotencyKey: params.idempotencyKey ?? newIdempotencyKey(),
-      body: { body: params.body, media_ids: params.mediaIds },
+      body: { body: params.body, media_ids: params.mediaIds, file_ids: params.fileIds },
     });
   }
 
-  /** Changes the text of one of the user's own messages. Its images stay. */
+  /** Changes the text of one of the user's own messages. Its images and files stay. */
   edit(messageId: string, body: string, options: CallOptions = {}): Promise<CoachMessage> {
     required("messageId", messageId);
     if (typeof body !== "string") throw new ValidationError("body", "body is required.");
@@ -184,13 +189,15 @@ export class CoachChatAPI {
     });
   }
 
+  // ---- voice notes and documents: the coach's side, and a member when the creator allows it ----
+
   /** Step 1 of 3 for a voice note or a document: asks for a link to send it to. `uploadFile` does all three. */
   startFile(params: CoachFileParams): Promise<CoachFileUpload> {
     required("fileName", params.fileName);
     required("contentType", params.contentType);
     if (params.kind !== "voice" && params.kind !== "file") throw new ValidationError("kind", 'kind must be "voice" or "file".');
     return this.transport.request({
-      method: "POST", path: "/v1/coach-chat/files", audience: "coach", signal: params.signal,
+      method: "POST", path: "/v1/coach-chat/files", audience: "member", signal: params.signal,
       body: { kind: params.kind, file_name: params.fileName, content_type: params.contentType, duration_ms: params.durationMs },
     });
   }
@@ -199,7 +206,7 @@ export class CoachChatAPI {
   completeFile(fileId: string, options: CallOptions = {}): Promise<CoachFile> {
     required("fileId", fileId);
     return this.transport.request({
-      method: "POST", path: `/v1/coach-chat/files/${enc(fileId)}/complete`, audience: "coach",
+      method: "POST", path: `/v1/coach-chat/files/${enc(fileId)}/complete`, audience: "member",
       // Completing an upload twice returns the same file.
       repeatable: true, signal: options.signal,
     });
@@ -207,8 +214,8 @@ export class CoachChatAPI {
 
   /**
    * Uploads one voice note or document: asks for a link, sends the file to
-   * it, and finishes the upload. The returned file's `id` goes in
-   * `sendAsCoach`'s `fileIds`.
+   * it, and finishes the upload. The returned file's `id` goes in `fileIds`
+   * of `send` (a member) or `sendAsCoach` (the coach's side).
    */
   async uploadFile(file: UploadSource, params: CoachFileParams): Promise<CoachFile> {
     const size = file instanceof Blob ? file.size : file.byteLength;

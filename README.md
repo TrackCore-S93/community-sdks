@@ -37,7 +37,7 @@ dependencies:
 ## Releases
 
 One tag per package and version: `typescript-v0.1.1`, `react-native-v0.1.1`,
-`react-native-capture-v0.1.0`, `flutter-v0.1.1`, `flutter-capture-v0.1.1`. The two npm packages are attached to their release as the
+`react-native-capture-v0.1.1`, `flutter-v0.1.1`, `flutter-capture-v0.1.1`. The two npm packages are attached to their release as the
 file `npm pack` produces.
 
 ## Developing

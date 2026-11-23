@@ -36,13 +36,14 @@ enum CoachFileKind {
 /// The coaching chat.
 ///
 /// Every member has one chat; it needs no id and is made by its first
-/// message. A member sends text and images. Voice notes and documents come
-/// from the coach's side only.
+/// message. A member sends text and images, and voice notes and documents
+/// when the creator allows it ([startFile], [completeFile], [uploadFile]).
+/// The coach's side can always send both.
 ///
-/// [chats], [memberMessages], [markMemberRead], [startFile], [completeFile],
-/// [uploadFile] and [sendAsCoach] are the coach's side. They need a secret
-/// key, on a Dart server, and the coach named with `setUser`: a member of
-/// the community whose role is coach or creator.
+/// [chats], [memberMessages], [markMemberRead] and [sendAsCoach] are the
+/// coach's side. They need a secret key, on a Dart server, and the coach
+/// named with `setUser`: a member of the community whose role is coach or
+/// creator.
 final class CoachChatApi {
   CoachChatApi(this._transport);
   final Transport _transport;
@@ -76,18 +77,24 @@ final class CoachChatApi {
     })));
   }
 
-  /// Sends a message to the coach: text, images, or both. A retry cannot
-  /// send twice: the SDK sends an idempotency key, its own unless you pass
-  /// one. Sending also marks the chat read for the member.
+  /// Sends a message to the coach: text, images, files, or any mix. A retry
+  /// cannot send twice: the SDK sends an idempotency key, its own unless you
+  /// pass one. Sending also marks the chat read for the member.
+  ///
+  /// [fileIds] are voice notes and documents from [uploadFile]. A member may
+  /// send them only when the creator allows it: check
+  /// `coachChatVoiceEnabled` and `coachChatFilesEnabled` in the settings.
   Future<CoachMessage> send(
           {String? body,
           List<String>? mediaIds,
+          List<String>? fileIds,
           String? idempotencyKey}) async =>
       CoachMessage.fromJson(_object(await _transport.request(
           'POST', '/v1/coach-chat/messages',
           audience: Audience.member,
           idempotencyKey: idempotencyKey ?? newIdempotencyKey(),
-          body: _given({'body': body, 'media_ids': mediaIds}))));
+          body: _given(
+              {'body': body, 'media_ids': mediaIds, 'file_ids': fileIds}))));
 
   /// Changes the text of one of the user's own messages. Its images stay.
   Future<CoachMessage> edit(String messageId, String body) async {
@@ -199,7 +206,7 @@ final class CoachChatApi {
     _required('contentType', contentType);
     return CoachFileUpload.fromJson(
         _object(await _transport.request('POST', '/v1/coach-chat/files',
-            audience: Audience.coach,
+            audience: Audience.member,
             body: _given({
               'kind': kind.name,
               'file_name': fileName,
@@ -213,12 +220,12 @@ final class CoachChatApi {
     _required('fileId', fileId);
     return CoachFile.fromJson(_object(await _transport.request(
         'POST', '/v1/coach-chat/files/${_enc(fileId)}/complete',
-        audience: Audience.coach, repeatable: true)));
+        audience: Audience.member, repeatable: true)));
   }
 
   /// Uploads one voice note or document: asks for a link, sends the bytes to
-  /// it, and finishes the upload. The returned file's `id` goes in
-  /// [sendAsCoach]'s `fileIds`.
+  /// it, and finishes the upload. The returned file's `id` goes in `fileIds`
+  /// of [send] (a member) or [sendAsCoach] (the coach's side).
   Future<CoachFile> uploadFile(Uint8List bytes,
       {required CoachFileKind kind,
       required String fileName,

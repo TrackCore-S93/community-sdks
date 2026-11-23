@@ -5028,9 +5028,10 @@
       }
      },
      "403": {
-      "description": "One of: `user_scope_violation`.",
+      "description": "One of: `user_scope_violation`, `coach_chat_disabled`.",
       "x-community-codes": [
-       "user_scope_violation"
+       "user_scope_violation",
+       "coach_chat_disabled"
       ],
       "content": {
        "application/json": {
@@ -5181,9 +5182,10 @@
       }
      },
      "403": {
-      "description": "One of: `user_scope_violation`.",
+      "description": "One of: `user_scope_violation`, `coach_chat_disabled`.",
       "x-community-codes": [
-       "user_scope_violation"
+       "user_scope_violation",
+       "coach_chat_disabled"
       ],
       "content": {
        "application/json": {
@@ -5253,7 +5255,7 @@
      "Coach chat"
     ],
     "summary": "Send a message to the coach",
-    "description": "Text, images, or both. Images are uploaded first with `POST /v1/media`. Sending also marks the chat read for the member.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`.",
+    "description": "Text, images, files, or any mix. Images are uploaded first with `POST /v1/media`. Voice notes and documents are uploaded first with `POST /v1/coach-chat/files`, and only when the creator lets members send them. Sending also marks the chat read for the member.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`.",
     "x-community-auth": "member",
     "x-community-sdk": "coachChat.send",
     "parameters": [
@@ -5330,9 +5332,10 @@
       }
      },
      "403": {
-      "description": "One of: `user_scope_violation`.",
+      "description": "One of: `user_scope_violation`, `coach_chat_disabled`.",
       "x-community-codes": [
-       "user_scope_violation"
+       "user_scope_violation",
+       "coach_chat_disabled"
       ],
       "content": {
        "application/json": {
@@ -5417,7 +5420,7 @@
      "Coach chat"
     ],
     "summary": "Edit a message",
-    "description": "Changes the text of one of the member's own messages and sets `edited_at`. Its images stay. The text may be emptied only when the message has images. Sending the text it already has changes nothing.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`.",
+    "description": "Changes the text of one of the member's own messages and sets `edited_at`. Its images and files stay. The text may be emptied only when the message has images or files. Sending the text it already has changes nothing.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`.",
     "x-community-auth": "member",
     "x-community-sdk": "coachChat.edit",
     "parameters": [
@@ -5484,10 +5487,11 @@
       }
      },
      "403": {
-      "description": "One of: `user_scope_violation`, `forbidden`.",
+      "description": "One of: `user_scope_violation`, `forbidden`, `coach_chat_disabled`.",
       "x-community-codes": [
        "user_scope_violation",
-       "forbidden"
+       "forbidden",
+       "coach_chat_disabled"
       ],
       "content": {
        "application/json": {
@@ -5583,7 +5587,7 @@
      "Coach chat"
     ],
     "summary": "Delete a message",
-    "description": "Deletes one of the member's own messages for good, with its images. Deleting one that is already gone is not an error. The coach's message cannot be deleted by the member.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`.",
+    "description": "Deletes one of the member's own messages for good, with its images and files. Deleting one that is already gone is not an error. The coach's message cannot be deleted by the member.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`.",
     "x-community-auth": "member",
     "x-community-sdk": "coachChat.delete",
     "parameters": [
@@ -5639,10 +5643,11 @@
       }
      },
      "403": {
-      "description": "One of: `user_scope_violation`, `forbidden`.",
+      "description": "One of: `user_scope_violation`, `forbidden`, `coach_chat_disabled`.",
       "x-community-codes": [
        "user_scope_violation",
-       "forbidden"
+       "forbidden",
+       "coach_chat_disabled"
       ],
       "content": {
        "application/json": {
@@ -5767,10 +5772,11 @@
       }
      },
      "403": {
-      "description": "One of: `user_scope_violation`, `forbidden`.",
+      "description": "One of: `user_scope_violation`, `forbidden`, `coach_chat_disabled`.",
       "x-community-codes": [
        "user_scope_violation",
-       "forbidden"
+       "forbidden",
+       "coach_chat_disabled"
       ],
       "content": {
        "application/json": {
@@ -5883,9 +5889,10 @@
       }
      },
      "403": {
-      "description": "One of: `user_scope_violation`.",
+      "description": "One of: `user_scope_violation`, `coach_chat_disabled`.",
       "x-community-codes": [
-       "user_scope_violation"
+       "user_scope_violation",
+       "coach_chat_disabled"
       ],
       "content": {
        "application/json": {
@@ -6027,9 +6034,10 @@
       }
      },
      "403": {
-      "description": "One of: `user_scope_violation`.",
+      "description": "One of: `user_scope_violation`, `coach_chat_disabled`.",
       "x-community-codes": [
-       "user_scope_violation"
+       "user_scope_violation",
+       "coach_chat_disabled"
       ],
       "content": {
        "application/json": {
@@ -6101,10 +6109,13 @@
      "Coach chat"
     ],
     "summary": "Start the upload of a voice note or a document",
-    "description": "The coach's side of the chat can send a voice note or a document. This records the file and returns a link to send its bytes to. Send them with the method given, then call the complete route, then name the file in `file_ids` when sending a message. A voice note may be any audio type. A document must be a PDF, Word, Excel, PowerPoint, RTF, text or CSV file. A file that is never put on a message is removed after a day.\n\n**Who may call it.** Secret key only, with `X-External-Id` naming a member whose role is `coach` or `creator`: the creator's backend, acting as that coach.",
-    "x-community-auth": "creator",
+    "description": "Records a voice note or a document about to be uploaded, and returns a link to send its bytes to. Send them with the method given, then call the complete route, then name the file in `file_ids` when sending a message. A voice note may be any audio type. A document must be a PDF, Word, Excel, PowerPoint, RTF, text or CSV file. A file that is never put on a message is removed after a day.\n\nThe coach's side (a member whose role is `coach` or `creator`) may always upload both kinds. Any other member may upload a kind only when the creator allows members to send it: `coach_chat_voice_enabled` for a voice note, `coach_chat_files_enabled` for a document. Otherwise the answer is `forbidden`.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`.",
+    "x-community-auth": "member",
     "x-community-sdk": "coachChat.startFile",
     "parameters": [
+     {
+      "$ref": "#/components/parameters/SessionHeader"
+     },
      {
       "$ref": "#/components/parameters/ExternalIdHeader"
      }
@@ -6145,12 +6156,13 @@
       }
      },
      "401": {
-      "description": "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`.",
+      "description": "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`.",
       "x-community-codes": [
        "credential_missing",
        "credential_malformed",
        "credential_unknown",
-       "credential_revoked"
+       "credential_revoked",
+       "session_invalid"
       ],
       "content": {
        "application/json": {
@@ -6161,9 +6173,11 @@
       }
      },
      "403": {
-      "description": "One of: `forbidden`.",
+      "description": "One of: `user_scope_violation`, `forbidden`, `coach_chat_disabled`.",
       "x-community-codes": [
-       "forbidden"
+       "user_scope_violation",
+       "forbidden",
+       "coach_chat_disabled"
       ],
       "content": {
        "application/json": {
@@ -6248,8 +6262,8 @@
      "Coach chat"
     ],
     "summary": "Finish the upload of a voice note or a document",
-    "description": "Says the file has been sent to its link. The server checks it arrived and is within the limit, and marks it ready to put on a message. Safe to repeat. A file that is empty or over the limit is refused and removed: start a new upload.\n\n**Who may call it.** Secret key only, with `X-External-Id` naming a member whose role is `coach` or `creator`: the creator's backend, acting as that coach.",
-    "x-community-auth": "creator",
+    "description": "Says the file has been sent to its link. The server checks it arrived and is within the limit, and marks it ready to put on a message. Safe to repeat. A file that is empty or over the limit is refused and removed: start a new upload. Only the user who started the upload can finish it.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`.",
+    "x-community-auth": "member",
     "x-community-sdk": "coachChat.completeFile",
     "parameters": [
      {
@@ -6261,6 +6275,9 @@
       },
       "description": "The file's id, from starting the upload.",
       "example": "cm_att_…"
+     },
+     {
+      "$ref": "#/components/parameters/SessionHeader"
      },
      {
       "$ref": "#/components/parameters/ExternalIdHeader"
@@ -6292,12 +6309,13 @@
       }
      },
      "401": {
-      "description": "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`.",
+      "description": "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`.",
       "x-community-codes": [
        "credential_missing",
        "credential_malformed",
        "credential_unknown",
-       "credential_revoked"
+       "credential_revoked",
+       "session_invalid"
       ],
       "content": {
        "application/json": {
@@ -6308,9 +6326,11 @@
       }
      },
      "403": {
-      "description": "One of: `forbidden`.",
+      "description": "One of: `user_scope_violation`, `forbidden`, `coach_chat_disabled`.",
       "x-community-codes": [
-       "forbidden"
+       "user_scope_violation",
+       "forbidden",
+       "coach_chat_disabled"
       ],
       "content": {
        "application/json": {
@@ -6487,9 +6507,10 @@
       }
      },
      "403": {
-      "description": "One of: `forbidden`.",
+      "description": "One of: `forbidden`, `coach_chat_disabled`.",
       "x-community-codes": [
-       "forbidden"
+       "forbidden",
+       "coach_chat_disabled"
       ],
       "content": {
        "application/json": {
@@ -6639,9 +6660,10 @@
       }
      },
      "403": {
-      "description": "One of: `forbidden`.",
+      "description": "One of: `forbidden`, `coach_chat_disabled`.",
       "x-community-codes": [
-       "forbidden"
+       "forbidden",
+       "coach_chat_disabled"
       ],
       "content": {
        "application/json": {
@@ -6787,9 +6809,10 @@
       }
      },
      "403": {
-      "description": "One of: `forbidden`.",
+      "description": "One of: `forbidden`, `coach_chat_disabled`.",
       "x-community-codes": [
-       "forbidden"
+       "forbidden",
+       "coach_chat_disabled"
       ],
       "content": {
        "application/json": {
@@ -6940,9 +6963,10 @@
       }
      },
      "403": {
-      "description": "One of: `forbidden`.",
+      "description": "One of: `forbidden`, `coach_chat_disabled`.",
       "x-community-codes": [
-       "forbidden"
+       "forbidden",
+       "coach_chat_disabled"
       ],
       "content": {
        "application/json": {
@@ -11662,6 +11686,9 @@
      "bio_max_length",
      "profile_viewing_enabled",
      "push_enabled",
+     "coach_chat_enabled",
+     "coach_chat_voice_enabled",
+     "coach_chat_files_enabled",
      "max_image_upload_bytes",
      "image_uploads_enabled"
     ],
@@ -11716,6 +11743,21 @@
       "type": "boolean",
       "description": "Notifications are also sent to members' phones.",
       "example": true
+     },
+     "coach_chat_enabled": {
+      "type": "boolean",
+      "description": "The coaching chat is offered in this community. While it is off, every coaching-chat route answers `coach_chat_disabled`; the app should not show the chat.",
+      "example": true
+     },
+     "coach_chat_voice_enabled": {
+      "type": "boolean",
+      "description": "Members may send voice notes in the coaching chat. The app shows its record button only when this is true. The coach's side can always send them.",
+      "example": false
+     },
+     "coach_chat_files_enabled": {
+      "type": "boolean",
+      "description": "Members may send documents in the coaching chat. The app shows its attach-file button only when this is true. The coach's side can always send them.",
+      "example": false
      },
      "max_image_upload_bytes": {
       "type": "integer",
@@ -11840,6 +11882,30 @@
       ],
       "description": "Whether notifications are also sent to members' phones.",
       "example": true
+     },
+     "coach_chat_enabled": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "Whether the coaching chat is offered. Turning it off refuses every coaching-chat route for members and the coach's side; nothing is deleted, and the chats are there again when it is turned back on.",
+      "example": true
+     },
+     "coach_chat_voice_enabled": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "Whether members may send voice notes in the coaching chat. Off unless turned on. Turning it off later leaves the voice notes already sent in place.",
+      "example": false
+     },
+     "coach_chat_files_enabled": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "Whether members may send documents in the coaching chat. Off unless turned on. Turning it off later leaves the files already sent in place.",
+      "example": false
      }
     }
    },
@@ -12031,7 +12097,7 @@
       "items": {
        "$ref": "#/components/schemas/CoachFile"
       },
-      "description": "The voice notes and documents on it. Only the coach's side sends them; a member's message has none."
+      "description": "The voice notes and documents on it. The coach's side can always send them; a member only when the creator allows it."
      },
      "is_mine": {
       "type": "boolean",
@@ -12309,12 +12375,12 @@
    },
    "SendCoachMessageRequest": {
     "type": "object",
-    "description": "A new chat message: text, images, or both.",
+    "description": "A new chat message: text, images, files, or any mix.",
     "x-go-type": "httpx.sendCoachMessageRequest",
     "properties": {
      "body": {
       "type": "string",
-      "description": "The text. May be left out when the message has images.",
+      "description": "The text. May be left out when the message has images or files.",
       "example": "Thanks!"
      },
      "media_ids": {
@@ -12323,6 +12389,13 @@
        "type": "string"
       },
       "description": "Uploaded images, in display order."
+     },
+     "file_ids": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "Voice notes and documents the member uploaded with `POST /v1/coach-chat/files`, in order, at most 10. A voice note needs the creator's `coach_chat_voice_enabled`, a document `coach_chat_files_enabled`; without it the message is refused."
      }
     }
    },
@@ -12333,7 +12406,7 @@
     "properties": {
      "body": {
       "type": "string",
-      "description": "The text. May be empty only when the message has images.",
+      "description": "The text. May be empty only when the message has images or files.",
       "example": "Thanks a lot!"
      }
     }
@@ -12767,6 +12840,7 @@
      "community_join_required",
      "comment_replies_disabled",
      "profile_viewing_disabled",
+     "coach_chat_disabled",
      "topic_name_taken",
      "media_not_uploaded",
      "media_too_large",
@@ -12888,6 +12962,12 @@
    "code": "profile_viewing_disabled",
    "status": 403,
    "message": "Viewing other members' profiles is turned off for this community.",
+   "retryable": false
+  },
+  {
+   "code": "coach_chat_disabled",
+   "status": 403,
+   "message": "The coaching chat is turned off for this community.",
    "retryable": false
   },
   {

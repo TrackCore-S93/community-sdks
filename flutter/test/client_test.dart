@@ -277,7 +277,7 @@ void main() {
             .having((e) => e.rawCode, 'rawCode', 'brand_new_code')));
     expect(
         CommunityErrorCode.values.where((e) => e != CommunityErrorCode.unknown),
-        hasLength(28));
+        hasLength(29));
   });
 
   test(
@@ -713,6 +713,9 @@ const Map<String, Object?> settingsJson = {
   'bio_max_length': 300,
   'profile_viewing_enabled': true,
   'push_enabled': true,
+  'coach_chat_enabled': true,
+  'coach_chat_voice_enabled': false,
+  'coach_chat_files_enabled': false,
   'max_image_upload_bytes': 10485760,
   'image_uploads_enabled': true,
 };

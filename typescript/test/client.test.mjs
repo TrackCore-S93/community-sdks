@@ -146,7 +146,7 @@ test("each failure becomes a typed error", async () => {
     if (code === "validation_failed") assert.deepEqual(error.fields, { username: "is too short" });
   }
   assert.equal(errorCodeSpec("username_taken").status, 409);
-  assert.equal(ALL_ERROR_CODES.length, 28);
+  assert.equal(ALL_ERROR_CODES.length, 29);
 });
 
 test("a reply that is not from the API is a ProtocolError that hides its body", async () => {

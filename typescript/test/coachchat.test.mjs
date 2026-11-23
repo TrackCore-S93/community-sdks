@@ -89,6 +89,34 @@ test("a member searches their chat", async () => {
   assert.equal(calls.length, 1);
 });
 
+test("a member sends a voice note, when the creator allows it", async () => {
+  const note = { id: "cm_att_5", kind: "voice", name: "note.m4a", content_type: "audio/mp4", bytes: 3, duration_ms: 9000, url: "https://files.test/n" };
+  const { fetch, calls } = fakeFetch([
+    session(),
+    json(201, { id: "cm_att_5", kind: "voice", name: "note.m4a", upload: { method: "PUT", url: "https://bucket.test/put", expires_at: "2026-11-20T10:15:00Z" }, max_bytes: 100 }),
+    new Response(null, { status: 200 }),
+    json(200, note),
+    json(201, message({ id: "cm_msg_7", body: "", files: [note] })),
+  ]);
+  const c = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch, runtime: "browser" });
+  await c.initialize("ali");
+  calls.length = 0;
+
+  // The same upload the coach's side uses, with the member's own session.
+  const uploaded = await c.coachChat.uploadFile(new Uint8Array([1, 2, 3]), { kind: "voice", fileName: "note.m4a", contentType: "audio/mp4", durationMs: 9000 });
+  assert.equal(uploaded.id, "cm_att_5");
+  assert.equal(calls[0].url, `${base}/v1/coach-chat/files`);
+  assert.ok(calls[0].headers["X-Session-Token"] ?? calls[0].headers["x-session-token"] ?? calls[0].headers.Authorization);
+  assert.deepEqual(calls[0].body, { kind: "voice", file_name: "note.m4a", content_type: "audio/mp4", duration_ms: 9000 });
+  assert.equal(calls[1].url, "https://bucket.test/put");
+  assert.equal(calls[2].url, `${base}/v1/coach-chat/files/cm_att_5/complete`);
+
+  const sent = await c.coachChat.send({ fileIds: [uploaded.id] });
+  assert.equal(sent.files[0].kind, "voice");
+  assert.equal(calls[3].url, `${base}/v1/coach-chat/messages`);
+  assert.deepEqual(calls[3].body, { file_ids: ["cm_att_5"] });
+});
+
 test("a member deletes one image from a message", async () => {
   const { c, calls } = await memberClient([
     json(200, { deleted: true, message_deleted: false, message: message({ body: "My meals" }) }),
@@ -119,8 +147,9 @@ test("the coach's side needs a secret key and a named coach", async () => {
   const device = await memberClient([]);
   for (const call of [
     () => device.c.coachChat.sendAsCoach({ memberId: "ali", body: "x" }),
-    () => device.c.coachChat.startFile({ kind: "file", fileName: "a.pdf", contentType: "application/pdf" }),
-    () => device.c.coachChat.completeFile("cm_att_1"),
+    () => device.c.coachChat.chats(),
+    () => device.c.coachChat.memberMessages("ali"),
+    () => device.c.coachChat.markMemberRead("ali"),
   ]) {
     await assert.rejects(async () => call(), (e) => e instanceof ConfigurationError && e.reason === "secret_key_required");
   }

@@ -6,6 +6,8 @@ import {
   type BlocksAPI,
   type CallOptions,
   type CoachChatAPI,
+  type CoachFile,
+  type CoachFileParams,
   type CommentsAPI,
   type CommunityAPI,
   type CommunityOptions,
@@ -45,6 +47,20 @@ export type DeviceMediaAPI = MediaAPI & {
   uploadFile(file: DeviceFile, options?: CallOptions): Promise<Media>;
 };
 
+/** The member's side of the coaching chat, with one more way in: a file on the device. */
+export type DeviceCoachChatAPI = Pick<
+  CoachChatAPI,
+  "get" | "messages" | "send" | "edit" | "delete" | "deleteImage" | "markRead" | "search" | "startFile" | "completeFile" | "uploadFile"
+> & {
+  /**
+   * Uploads a voice note or a document from a file on the device, such as
+   * the `uri` a document picker or a recorder returns. Reads the file, then
+   * does what `uploadFile` does. The returned file's `id` goes in `fileIds`
+   * of `send`.
+   */
+  uploadDeviceFile(file: DeviceFile, params: CoachFileParams): Promise<CoachFile>;
+};
+
 const SECRET_KEY = /^cm_sk_/;
 
 /**
@@ -66,6 +82,7 @@ export class Community {
 
   #core: CoreCommunity | null = null;
   #media: DeviceMediaAPI | null = null;
+  #chat: DeviceCoachChatAPI | null = null;
 
   /** Pass options to build a ready client. */
   constructor(options?: CommunityDeviceOptions | null) {
@@ -89,6 +106,10 @@ export class Community {
     this.#core = core;
     this.#media = Object.assign(Object.create(core.media) as MediaAPI, {
       uploadFile: (file: DeviceFile, callOptions: CallOptions = {}) => uploadFile(core.media, read, file, callOptions),
+    });
+    this.#chat = Object.assign(Object.create(core.coachChat) as CoachChatAPI, {
+      uploadDeviceFile: async (file: DeviceFile, params: CoachFileParams) =>
+        core.coachChat.uploadFile(await readDeviceFile(read, file, params.signal), params),
     });
     return this;
   }
@@ -186,12 +207,13 @@ export class Community {
   /** Notifications. */
   get notifications(): NotificationsAPI { return this.#ready.notifications; }
   /**
-   * The coaching chat: the member's one-to-one chat with their coach.
-   * Answering as the coach, and sending voice notes and files, is the
-   * creator's, on a backend.
+   * The coaching chat: the member's one-to-one chat with their coach. A
+   * member sends voice notes and documents when the creator allows it.
+   * Answering as the coach is the creator's, on a backend.
    */
-  get coachChat(): Pick<CoachChatAPI, "get" | "messages" | "send" | "edit" | "delete" | "deleteImage" | "markRead" | "search"> {
-    return this.#ready.coachChat;
+  get coachChat(): DeviceCoachChatAPI {
+    void this.#ready;
+    return this.#chat as DeviceCoachChatAPI;
   }
   /**
    * Push notifications. Get the phone's push token from Expo's or Firebase's
@@ -214,17 +236,20 @@ export function createCommunityClient(options: CommunityDeviceOptions): Communit
   return new Community(options);
 }
 
-async function uploadFile(media: MediaAPI, read: FetchLike, file: DeviceFile, options: CallOptions): Promise<Media> {
+async function readDeviceFile(read: FetchLike, file: DeviceFile, signal?: AbortSignal): Promise<Blob> {
   if (!file || typeof file.uri !== "string" || file.uri === "") {
     throw new ValidationError("file", "file.uri is required.");
   }
-  let blob: Blob;
   try {
     // React Native's fetch reads a local file address into a Blob.
-    const response = await read(file.uri, { signal: options.signal });
-    blob = await response.blob();
+    const response = await read(file.uri, { signal });
+    return await response.blob();
   } catch (error) {
     throw new ConnectionError("The file could not be read from the device.", { cause: error });
   }
+}
+
+async function uploadFile(media: MediaAPI, read: FetchLike, file: DeviceFile, options: CallOptions): Promise<Media> {
+  const blob = await readDeviceFile(read, file, options.signal);
   return media.upload(blob, { contentType: file.type ?? (blob.type || undefined), signal: options.signal });
 }

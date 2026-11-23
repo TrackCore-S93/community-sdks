@@ -574,6 +574,9 @@ final class SettingsApi {
     int? bioMaxLength,
     bool? profileViewingEnabled,
     bool? pushEnabled,
+    bool? coachChatEnabled,
+    bool? coachChatVoiceEnabled,
+    bool? coachChatFilesEnabled,
   }) async =>
       Settings.fromJson(
           _object(await _transport.request('PATCH', '/v1/settings',
@@ -589,5 +592,8 @@ final class SettingsApi {
                 'bio_max_length': bioMaxLength,
                 'profile_viewing_enabled': profileViewingEnabled,
                 'push_enabled': pushEnabled,
+                'coach_chat_enabled': coachChatEnabled,
+                'coach_chat_voice_enabled': coachChatVoiceEnabled,
+                'coach_chat_files_enabled': coachChatFilesEnabled,
               }))));
 }

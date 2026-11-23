@@ -248,13 +248,13 @@ const List<OperationSpec> operations = [
     sdk: 'coachChat.startFile',
     method: 'POST',
     path: '/v1/coach-chat/files',
-    auth: 'creator'
+    auth: 'member'
   ),
   (
     sdk: 'coachChat.completeFile',
     method: 'POST',
     path: '/v1/coach-chat/files/{file_id}/complete',
-    auth: 'creator'
+    auth: 'member'
   ),
   (
     sdk: 'coachChat.chats',

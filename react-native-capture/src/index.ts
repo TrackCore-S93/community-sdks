@@ -26,4 +26,4 @@ export function captureImage(options: CaptureOptions): Promise<Media | null> {
 }
 
 /** The version of this package. */
-export const CAPTURE_VERSION = "0.1.0";
+export const CAPTURE_VERSION = "0.1.1";
