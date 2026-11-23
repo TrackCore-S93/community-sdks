@@ -142,6 +142,30 @@ void main() {
     expect(adapter.calls, hasLength(5));
   });
 
+  test('a member deletes one image from a message', () async {
+    final (c, adapter) = await member([
+      json(200, {
+        'deleted': true,
+        'message_deleted': false,
+        'message': message(body: 'My meals')
+      }),
+      json(200, {'deleted': true, 'message_deleted': true, 'message': null}),
+    ]);
+    final kept = await c.coachChat.deleteImage('cm_msg_1', 'cm_med_1');
+    expect(kept.deleted, isTrue);
+    expect(kept.message!.body, 'My meals');
+    expect(adapter.calls[0].method, 'DELETE');
+    expect(adapter.calls[0].path,
+        '/v1/coach-chat/messages/cm_msg_1/images/cm_med_1');
+
+    final gone = await c.coachChat.deleteImage('cm_msg_2', 'cm_med_2');
+    expect(gone.messageDeleted, isTrue);
+    expect(gone.message, isNull);
+
+    await expectLater(c.coachChat.deleteImage('cm_msg_1', ''),
+        throwsA(isA<CommunityValidationException>()));
+  });
+
   test("the coach's messages carry voice notes and files", () async {
     final (c, _) = await member([
       json(

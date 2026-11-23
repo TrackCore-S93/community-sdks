@@ -105,6 +105,18 @@ final class CoachChatApi {
         audience: Audience.member)));
   }
 
+  /// Deletes one image from one of the user's own messages. The text and the
+  /// other images stay. If the image was all the message had, the message is
+  /// deleted with it: `messageDeleted` is true and `message` is null.
+  Future<CoachImageRemoved> deleteImage(
+      String messageId, String imageId) async {
+    _required('messageId', messageId);
+    _required('imageId', imageId);
+    return CoachImageRemoved.fromJson(_object(await _transport.request('DELETE',
+        '/v1/coach-chat/messages/${_enc(messageId)}/images/${_enc(imageId)}',
+        audience: Audience.member)));
+  }
+
   /// The user has seen the chat: call it while the chat is open and a
   /// message from the coach is on screen.
   Future<CoachChat> markRead() async => CoachChat.fromJson(_object(

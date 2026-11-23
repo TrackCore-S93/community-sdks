@@ -74,6 +74,8 @@ test("a member sends, edits and deletes a message", async () => {
   assert.equal(calls[3].method, "DELETE");
 
   assert.throws(() => c.coachChat.edit("", "x"), ValidationError);
+  assert.throws(() => c.coachChat.deleteImage("cm_msg_1", ""), ValidationError);
+  assert.throws(() => c.coachChat.deleteImage("", "cm_med_1"), ValidationError);
   assert.throws(() => c.coachChat.delete(""), ValidationError);
   assert.equal(calls.length, 4);
 });
@@ -85,6 +87,22 @@ test("a member searches their chat", async () => {
   assert.equal(calls[0].url, `${base}/v1/coach-chat/search?q=transformation+plan&limit=10`);
   assert.throws(() => c.coachChat.search({ q: "a" }), ValidationError);
   assert.equal(calls.length, 1);
+});
+
+test("a member deletes one image from a message", async () => {
+  const { c, calls } = await memberClient([
+    json(200, { deleted: true, message_deleted: false, message: message({ body: "My meals" }) }),
+    json(200, { deleted: true, message_deleted: true, message: null }),
+  ]);
+  const kept = await c.coachChat.deleteImage("cm_msg_1", "cm_med_1");
+  assert.equal(kept.deleted, true);
+  assert.equal(kept.message.body, "My meals");
+  assert.equal(calls[0].method, "DELETE");
+  assert.equal(calls[0].url, `${base}/v1/coach-chat/messages/cm_msg_1/images/cm_med_1`);
+
+  const gone = await c.coachChat.deleteImage("cm_msg_2", "cm_med_2");
+  assert.equal(gone.message_deleted, true);
+  assert.equal(gone.message, null);
 });
 
 test("the coach's messages carry voice notes and files", async () => {

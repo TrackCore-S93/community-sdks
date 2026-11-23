@@ -5,7 +5,7 @@ import { assertValidExternalId } from "./transport.js";
 import { newIdempotencyKey } from "./api.js";
 import type { UploadSource } from "./media.js";
 import type {
-  CoachChat, CoachChatList, CoachFile, CoachFileUpload, CoachMessage, CoachMessagePage, CoachSearchResults, Deleted,
+  CoachChat, CoachChatList, CoachFile, CoachImageRemoved, CoachFileUpload, CoachMessage, CoachMessagePage, CoachSearchResults, Deleted,
 } from "./generated/types.js";
 
 const enc = encodeURIComponent;
@@ -112,6 +112,19 @@ export class CoachChatAPI {
     required("messageId", messageId);
     return this.transport.request({
       method: "DELETE", path: `/v1/coach-chat/messages/${enc(messageId)}`, audience: "member", signal: options.signal,
+    });
+  }
+
+  /**
+   * Deletes one image from one of the user's own messages. The text and the
+   * other images stay. If the image was all the message had, the message is
+   * deleted with it: `message_deleted` is true and `message` is null.
+   */
+  deleteImage(messageId: string, imageId: string, options: CallOptions = {}): Promise<CoachImageRemoved> {
+    required("messageId", messageId);
+    required("imageId", imageId);
+    return this.transport.request({
+      method: "DELETE", path: `/v1/coach-chat/messages/${enc(messageId)}/images/${enc(imageId)}`, audience: "member", signal: options.signal,
     });
   }
 

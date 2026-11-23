@@ -53,6 +53,7 @@ export const OPERATIONS: readonly OperationSpec[] = [
   { sdk: "coachChat.send", operationId: "sendCoachMessage", method: "POST", path: "/v1/coach-chat/messages", auth: "member" },
   { sdk: "coachChat.edit", operationId: "editCoachMessage", method: "PATCH", path: "/v1/coach-chat/messages/{message_id}", auth: "member" },
   { sdk: "coachChat.delete", operationId: "deleteCoachMessage", method: "DELETE", path: "/v1/coach-chat/messages/{message_id}", auth: "member" },
+  { sdk: "coachChat.deleteImage", operationId: "deleteCoachMessageImage", method: "DELETE", path: "/v1/coach-chat/messages/{message_id}/images/{image_id}", auth: "member" },
   { sdk: "coachChat.markRead", operationId: "markCoachChatRead", method: "POST", path: "/v1/coach-chat/read", auth: "member" },
   { sdk: "coachChat.search", operationId: "searchCoachChat", method: "GET", path: "/v1/coach-chat/search", auth: "member" },
   { sdk: "coachChat.startFile", operationId: "beginCoachFile", method: "POST", path: "/v1/coach-chat/files", auth: "creator" },

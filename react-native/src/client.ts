@@ -190,7 +190,7 @@ export class Community {
    * Answering as the coach, and sending voice notes and files, is the
    * creator's, on a backend.
    */
-  get coachChat(): Pick<CoachChatAPI, "get" | "messages" | "send" | "edit" | "delete" | "markRead" | "search"> {
+  get coachChat(): Pick<CoachChatAPI, "get" | "messages" | "send" | "edit" | "delete" | "deleteImage" | "markRead" | "search"> {
     return this.#ready.coachChat;
   }
   /**

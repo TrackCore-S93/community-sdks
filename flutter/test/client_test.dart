@@ -599,7 +599,7 @@ void main() {
   });
 
   test('the SDK has a call for every route in the contract', () {
-    expect(operations, hasLength(68));
+    expect(operations, hasLength(69));
     expect(operations.map((o) => o.sdk).toSet(), implemented);
   });
 
@@ -769,6 +769,7 @@ const Set<String> implemented = {
   'coachChat.send',
   'coachChat.edit',
   'coachChat.delete',
+  'coachChat.deleteImage',
   'coachChat.markRead',
   'coachChat.search',
   'coachChat.startFile',

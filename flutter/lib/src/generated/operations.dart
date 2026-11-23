@@ -227,6 +227,12 @@ const List<OperationSpec> operations = [
     auth: 'member'
   ),
   (
+    sdk: 'coachChat.deleteImage',
+    method: 'DELETE',
+    path: '/v1/coach-chat/messages/{message_id}/images/{image_id}',
+    auth: 'member'
+  ),
+  (
     sdk: 'coachChat.markRead',
     method: 'POST',
     path: '/v1/coach-chat/read',

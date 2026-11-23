@@ -1,6 +1,6 @@
 {
   "name": "@trackcore/community-sdk",
-  "version": "0.1.2",
+  "version": "0.1.1",
   "description": "A typed client for the Community API: topics, posts, comments, reactions, notifications and live updates.",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",

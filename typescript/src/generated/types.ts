@@ -790,6 +790,16 @@ export interface CoachMessage {
   created_at: string;
 }
 
+/** The result of deleting one image from a chat message. */
+export interface CoachImageRemoved {
+  /** False when the image, or the message, was already gone, which is not an error. */
+  deleted: boolean;
+  /** True when the image was all the message had (no text, no other image), so the message was deleted with it. */
+  message_deleted: boolean;
+  /** The message afterwards. Null when it is gone. */
+  message: CoachMessage | null;
+}
+
 /** One page of a coaching chat, oldest first. */
 export interface CoachMessagePage {
   /** The messages on this page. */

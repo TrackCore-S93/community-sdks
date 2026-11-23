@@ -5694,6 +5694,134 @@
     }
    }
   },
+  "/v1/coach-chat/messages/{message_id}/images/{image_id}": {
+   "delete": {
+    "operationId": "deleteCoachMessageImage",
+    "tags": [
+     "Coach chat"
+    ],
+    "summary": "Delete one image from a message",
+    "description": "Takes one image off one of the member's own messages, for good. The text and the other images stay, and the message is not marked edited. If the image was all the message had, the message is deleted with it and `message_deleted` is true. Removing an image that is already gone is not an error. The coach's message cannot be changed by the member.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`.",
+    "x-community-auth": "member",
+    "x-community-sdk": "coachChat.deleteImage",
+    "parameters": [
+     {
+      "$ref": "#/components/parameters/MessageId"
+     },
+     {
+      "name": "image_id",
+      "in": "path",
+      "required": true,
+      "description": "The image's id, from the message's `images`.",
+      "schema": {
+       "type": "string"
+      },
+      "example": "cm_med_01HZX…"
+     },
+     {
+      "$ref": "#/components/parameters/SessionHeader"
+     },
+     {
+      "$ref": "#/components/parameters/ExternalIdHeader"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "What was removed, and the message afterwards.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CoachImageRemoved"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "One of: `ambiguous_credentials`.",
+      "x-community-codes": [
+       "ambiguous_credentials"
+      ],
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorEnvelope"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`.",
+      "x-community-codes": [
+       "credential_missing",
+       "credential_malformed",
+       "credential_unknown",
+       "credential_revoked",
+       "session_invalid"
+      ],
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorEnvelope"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "One of: `user_scope_violation`, `forbidden`.",
+      "x-community-codes": [
+       "user_scope_violation",
+       "forbidden"
+      ],
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorEnvelope"
+        }
+       }
+      }
+     },
+     "500": {
+      "description": "One of: `internal_error`.",
+      "x-community-codes": [
+       "internal_error"
+      ],
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorEnvelope"
+        }
+       }
+      }
+     },
+     "503": {
+      "description": "One of: `service_unavailable`.",
+      "x-community-codes": [
+       "service_unavailable"
+      ],
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorEnvelope"
+        }
+       }
+      }
+     },
+     "504": {
+      "description": "One of: `timeout`.",
+      "x-community-codes": [
+       "timeout"
+      ],
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorEnvelope"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/v1/coach-chat/read": {
    "post": {
     "operationId": "markCoachChatRead",
@@ -11927,6 +12055,39 @@
       "type": "string",
       "format": "date-time",
       "description": "When it was sent."
+     }
+    }
+   },
+   "CoachImageRemoved": {
+    "type": "object",
+    "description": "The result of deleting one image from a chat message.",
+    "x-go-type": "httpx.coachImageRemovedBody",
+    "required": [
+     "deleted",
+     "message_deleted",
+     "message"
+    ],
+    "properties": {
+     "deleted": {
+      "type": "boolean",
+      "description": "False when the image, or the message, was already gone, which is not an error.",
+      "example": true
+     },
+     "message_deleted": {
+      "type": "boolean",
+      "description": "True when the image was all the message had (no text, no other image), so the message was deleted with it.",
+      "example": false
+     },
+     "message": {
+      "description": "The message afterwards. Null when it is gone.",
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/CoachMessage"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     }
    },

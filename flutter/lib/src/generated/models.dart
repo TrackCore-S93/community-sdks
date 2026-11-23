@@ -1820,6 +1820,36 @@ final class CoachMessage {
   final DateTime createdAt;
 }
 
+/// The result of deleting one image from a chat message.
+final class CoachImageRemoved {
+  /// Builds a [CoachImageRemoved]. Normally it comes from the API.
+  const CoachImageRemoved({
+    required this.deleted,
+    required this.messageDeleted,
+    this.message,
+  });
+
+  /// Reads a [CoachImageRemoved] from the API's JSON.
+  factory CoachImageRemoved.fromJson(Map<String, Object?> json) =>
+      CoachImageRemoved(
+        deleted: json['deleted'] as bool,
+        messageDeleted: json['message_deleted'] as bool,
+        message: json['message'] == null
+            ? null
+            : CoachMessage.fromJson(
+                (json['message'] as Map).cast<String, Object?>()),
+      );
+
+  /// False when the image, or the message, was already gone, which is not an error.
+  final bool deleted;
+
+  /// True when the image was all the message had (no text, no other image), so the message was deleted with it.
+  final bool messageDeleted;
+
+  /// The message afterwards. Null when it is gone.
+  final CoachMessage? message;
+}
+
 /// One page of a coaching chat, oldest first.
 final class CoachMessagePage {
   /// Builds a [CoachMessagePage]. Normally it comes from the API.
