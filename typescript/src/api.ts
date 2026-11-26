@@ -1,5 +1,6 @@
 import { ValidationError } from "./errors.js";
-import type { CallOptions } from "./options.js";
+import type { CallOptions, FetchLike } from "./options.js";
+import { sendUpload, type UploadSource } from "./media.js";
 import type { Transport } from "./transport.js";
 import { assertValidExternalId } from "./transport.js";
 import type * as T from "./generated/types.js";
@@ -134,6 +135,10 @@ export interface CreateTopicParams extends CallOptions {
   description?: string;
   imageUrl?: string;
   coverUrl?: string;
+  /** An image from `topics.uploadImage`, used as the card image instead of `imageUrl`. */
+  imageMediaId?: string;
+  /** An image from `topics.uploadImage`, used as the sheet image instead of `coverUrl`. */
+  coverMediaId?: string;
   sortOrder?: number;
   isLive?: boolean;
   isTrending?: boolean;
@@ -141,6 +146,10 @@ export interface CreateTopicParams extends CallOptions {
 
 /** Topics: the sections posts are written in. */
 export class TopicsAPI extends Namespace {
+  constructor(transport: Transport, private readonly fetchImpl: FetchLike) {
+    super(transport);
+  }
+
   /** The community's topics. `trending: true` returns only trending ones. */
   list(params: { trending?: boolean } & CallOptions = {}): Promise<T.TopicList> {
     return this.transport.request({
@@ -162,6 +171,7 @@ export class TopicsAPI extends Namespace {
       method: "POST", path: "/v1/topics", audience: "creator", signal: params.signal,
       body: {
         name: params.name, description: params.description, image_url: params.imageUrl, cover_url: params.coverUrl,
+        image_media_id: params.imageMediaId, cover_media_id: params.coverMediaId,
         sort_order: params.sortOrder, is_live: params.isLive, is_trending: params.isTrending,
       },
     });
@@ -174,9 +184,34 @@ export class TopicsAPI extends Namespace {
       method: "PATCH", path: `/v1/topics/${enc(topicId)}`, audience: "creator", signal: changes.signal,
       body: {
         name: changes.name, description: changes.description, image_url: changes.imageUrl, cover_url: changes.coverUrl,
+        image_media_id: changes.imageMediaId, cover_media_id: changes.coverMediaId,
         sort_order: changes.sortOrder, is_live: changes.isLive, is_trending: changes.isTrending,
       },
     });
+  }
+
+  /** Step 1 of 3 for a topic's image: asks for a link to send a file to. `uploadImage` does all three steps. Secret key only. */
+  startImageUpload(options: CallOptions = {}): Promise<T.Upload> {
+    return this.transport.request({ method: "POST", path: "/v1/topics/images", audience: "creator", signal: options.signal });
+  }
+
+  /** Step 3 of 3: tells the server the file has arrived. It checks and stores the image. Secret key only. */
+  completeImageUpload(mediaId: string, options: CallOptions = {}): Promise<T.Media> {
+    required("mediaId", mediaId);
+    return this.transport.request({
+      method: "POST", path: `/v1/topics/images/${enc(mediaId)}/complete`, audience: "creator",
+      // Completing an upload twice returns the same image.
+      repeatable: true, signal: options.signal,
+    });
+  }
+
+  /**
+   * Uploads an image for a topic: asks for a link, sends the file to it, and
+   * finishes the upload. The returned image's `id` goes in `imageMediaId` or
+   * `coverMediaId` of `create` or `update`. Secret key only.
+   */
+  uploadImage(file: UploadSource, options: { contentType?: string } & CallOptions = {}): Promise<T.Media> {
+    return sendUpload(this.fetchImpl, file, options, () => this.startImageUpload(options), (id) => this.completeImageUpload(id, options));
   }
 
   /** Deletes a topic and its posts. Secret key only. */

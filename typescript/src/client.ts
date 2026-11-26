@@ -181,7 +181,7 @@ function buildAPIs(transport: Transport, options: CommunityOptions) {
     users: new UsersAPI(transport),
     community: new CommunityAPI(transport),
     members: new MembersAPI(transport),
-    topics: new TopicsAPI(transport),
+    topics: new TopicsAPI(transport, transport.fetch),
     posts: new PostsAPI(transport),
     comments: new CommentsAPI(transport),
     reactions: new ReactionsAPI(transport),

@@ -41,30 +41,44 @@ export class MediaAPI {
    * the upload. The returned image's `id` goes in a post's or comment's
    * `mediaIds`, or in `updateProfile`.
    */
-  async upload(file: UploadSource, options: { contentType?: string } & CallOptions = {}): Promise<Media> {
-    const size = file instanceof Blob ? file.size : file.byteLength;
-    if (!size) throw new ValidationError("file", "The file is empty.");
-    const started = await this.start(options);
-    if (size > started.max_bytes) {
-      throw new ValidationError("file", `The file is larger than the upload limit of ${started.max_bytes} bytes.`);
-    }
-    const contentType = options.contentType ?? (file instanceof Blob && file.type ? file.type : "application/octet-stream");
-    let response: Response;
-    try {
-      // The link carries its own permission, so no key is sent with the file.
-      response = await this.fetchImpl(started.upload.url, {
-        method: started.upload.method,
-        headers: { "Content-Type": contentType },
-        body: file as BodyInit,
-        signal: options.signal,
-      });
-    } catch (error) {
-      if (options.signal?.aborted) throw new AbortError();
-      throw new ConnectionError("The file could not be sent to storage.", { cause: error });
-    }
-    if (!response.ok) {
-      throw new ConnectionError(`Storage refused the file (HTTP ${response.status}).`);
-    }
-    return this.complete(started.id, options);
+  upload(file: UploadSource, options: { contentType?: string } & CallOptions = {}): Promise<Media> {
+    return sendUpload(this.fetchImpl, file, options, () => this.start(options), (id) => this.complete(id, options));
   }
+}
+
+/**
+ * The three steps of an upload, shared by every kind of image: ask for a
+ * link, send the file to it, and finish.
+ */
+export async function sendUpload(
+  fetchImpl: FetchLike,
+  file: UploadSource,
+  options: { contentType?: string } & CallOptions,
+  start: () => Promise<Upload>,
+  complete: (mediaId: string) => Promise<Media>,
+): Promise<Media> {
+  const size = file instanceof Blob ? file.size : file.byteLength;
+  if (!size) throw new ValidationError("file", "The file is empty.");
+  const started = await start();
+  if (size > started.max_bytes) {
+    throw new ValidationError("file", `The file is larger than the upload limit of ${started.max_bytes} bytes.`);
+  }
+  const contentType = options.contentType ?? (file instanceof Blob && file.type ? file.type : "application/octet-stream");
+  let response: Response;
+  try {
+    // The link carries its own permission, so no key is sent with the file.
+    response = await fetchImpl(started.upload.url, {
+      method: started.upload.method,
+      headers: { "Content-Type": contentType },
+      body: file as BodyInit,
+      signal: options.signal,
+    });
+  } catch (error) {
+    if (options.signal?.aborted) throw new AbortError();
+    throw new ConnectionError("The file could not be sent to storage.", { cause: error });
+  }
+  if (!response.ok) {
+    throw new ConnectionError(`Storage refused the file (HTTP ${response.status}).`);
+  }
+  return complete(started.id);
 }

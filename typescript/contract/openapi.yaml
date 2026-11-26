@@ -1141,6 +1141,150 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/topics/images:
+    post:
+      operationId: startTopicImageUpload
+      tags: [Topics]
+      summary: "Start uploading a topic's image"
+      description: "Step 1 of 3, for the image or cover of a topic. Returns a link to send the file to. Send the file's bytes to `upload.url` with `upload.method`, then finish the upload.\n\n**Who may call it.** Secret key only: the creator's backend."
+      x-community-auth: creator
+      x-community-sdk: topics.startImageUpload
+      responses:
+        "201":
+          description: "Where to send the file."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Upload'
+        "400":
+          description: "One of: `ambiguous_credentials`."
+          x-community-codes: [ambiguous_credentials]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `forbidden`."
+          x-community-codes: [forbidden]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/topics/images/{media_id}/complete:
+    post:
+      operationId: completeTopicImageUpload
+      tags: [Topics]
+      summary: "Finish uploading a topic's image"
+      description: "Step 3 of 3. The server checks the file and stores it as JPEG. Name the image in `image_media_id` or `cover_media_id` when creating or editing a topic. An upload that no topic takes is removed after a day.\n\n**Who may call it.** Secret key only: the creator's backend."
+      x-community-auth: creator
+      x-community-sdk: topics.completeImageUpload
+      parameters:
+        - $ref: '#/components/parameters/MediaId'
+      responses:
+        "200":
+          description: "The image, ready to use."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        "400":
+          description: "One of: `ambiguous_credentials`."
+          x-community-codes: [ambiguous_credentials]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `forbidden`."
+          x-community-codes: [forbidden]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "404":
+          description: "One of: `not_found`."
+          x-community-codes: [not_found]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "409":
+          description: "One of: `media_not_uploaded`."
+          x-community-codes: [media_not_uploaded]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "413":
+          description: "One of: `media_too_large`."
+          x-community-codes: [media_too_large]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "422":
+          description: "One of: `media_invalid`."
+          x-community-codes: [media_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /v1/topics/{topic_id}:
     get:
       operationId: getTopic
@@ -5651,6 +5795,14 @@ components:
           type: string
           description: "The image on the topic's sheet."
           example: ""
+        image_media_id:
+          type: string
+          description: "An image uploaded through `POST /v1/topics/images`, used as the card image instead of `image_url`."
+          example: "cm_med_01HZX3K9Q2M7V4T8B6N5R1C0AW"
+        cover_media_id:
+          type: string
+          description: "An image uploaded through `POST /v1/topics/images`, used as the sheet image instead of `cover_url`."
+          example: "cm_med_01HZX3K9Q2M7V4T8B6N5R1C0AW"
         sort_order:
           type: integer
           description: "Position in the list, lowest first."
@@ -5684,6 +5836,14 @@ components:
           type: [string, 'null']
           description: "A new sheet image."
           example: ""
+        image_media_id:
+          type: [string, 'null']
+          description: "An image uploaded through `POST /v1/topics/images`, to replace the card image. The upload it replaces is deleted."
+          example: "cm_med_01HZX3K9Q2M7V4T8B6N5R1C0AW"
+        cover_media_id:
+          type: [string, 'null']
+          description: "An image uploaded through `POST /v1/topics/images`, to replace the sheet image. The upload it replaces is deleted."
+          example: "cm_med_01HZX3K9Q2M7V4T8B6N5R1C0AW"
         sort_order:
           type: [integer, 'null']
           description: "A new position."

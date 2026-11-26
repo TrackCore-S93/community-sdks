@@ -45,23 +45,33 @@ final class MediaApi {
   /// the upload. The returned image's `id` goes in a post's or comment's
   /// `mediaIds`, or in `updateProfile`.
   Future<Media> upload(Uint8List bytes,
-      {String contentType = 'application/octet-stream'}) async {
-    if (bytes.isEmpty) {
-      throw const CommunityValidationException('bytes', 'The file is empty.');
-    }
-    final started = await start();
-    if (bytes.length > started.maxBytes) {
-      throw CommunityValidationException('bytes',
-          'The file is larger than the upload limit of ${started.maxBytes} bytes.');
-    }
-    final response = await _transport.sendTo(Uri.parse(started.upload.url),
-        started.upload.method, bytes, contentType);
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw CommunityTransportException(
-          'Storage refused the file (HTTP ${response.statusCode}).',
-          kind: CommunityTransportFailure.other,
-          attempts: 1);
-    }
-    return complete(started.id);
+          {String contentType = 'application/octet-stream'}) =>
+      sendUpload(_transport, bytes, contentType, start, complete);
+}
+
+/// The three steps of an upload, shared by every kind of image: ask for a
+/// link, send the bytes to it, and finish.
+Future<Media> sendUpload(
+    Transport transport,
+    Uint8List bytes,
+    String contentType,
+    Future<Upload> Function() start,
+    Future<Media> Function(String mediaId) complete) async {
+  if (bytes.isEmpty) {
+    throw const CommunityValidationException('bytes', 'The file is empty.');
   }
+  final started = await start();
+  if (bytes.length > started.maxBytes) {
+    throw CommunityValidationException('bytes',
+        'The file is larger than the upload limit of ${started.maxBytes} bytes.');
+  }
+  final response = await transport.sendTo(
+      Uri.parse(started.upload.url), started.upload.method, bytes, contentType);
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw CommunityTransportException(
+        'Storage refused the file (HTTP ${response.statusCode}).',
+        kind: CommunityTransportFailure.other,
+        attempts: 1);
+  }
+  return complete(started.id);
 }

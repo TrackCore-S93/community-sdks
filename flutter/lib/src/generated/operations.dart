@@ -86,6 +86,18 @@ const List<OperationSpec> operations = [
   ),
   (sdk: 'topics.create', method: 'POST', path: '/v1/topics', auth: 'creator'),
   (
+    sdk: 'topics.startImageUpload',
+    method: 'POST',
+    path: '/v1/topics/images',
+    auth: 'creator'
+  ),
+  (
+    sdk: 'topics.completeImageUpload',
+    method: 'POST',
+    path: '/v1/topics/images/{media_id}/complete',
+    auth: 'creator'
+  ),
+  (
     sdk: 'topics.get',
     method: 'GET',
     path: '/v1/topics/{topic_id}',

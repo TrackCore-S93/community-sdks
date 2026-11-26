@@ -27,6 +27,8 @@ export const OPERATIONS: readonly OperationSpec[] = [
   { sdk: "members.list", operationId: "listMembers", method: "GET", path: "/v1/community/members", auth: "creator" },
   { sdk: "topics.list", operationId: "listTopics", method: "GET", path: "/v1/topics", auth: "member_or_creator" },
   { sdk: "topics.create", operationId: "createTopic", method: "POST", path: "/v1/topics", auth: "creator" },
+  { sdk: "topics.startImageUpload", operationId: "startTopicImageUpload", method: "POST", path: "/v1/topics/images", auth: "creator" },
+  { sdk: "topics.completeImageUpload", operationId: "completeTopicImageUpload", method: "POST", path: "/v1/topics/images/{media_id}/complete", auth: "creator" },
   { sdk: "topics.get", operationId: "getTopic", method: "GET", path: "/v1/topics/{topic_id}", auth: "member_or_creator" },
   { sdk: "topics.update", operationId: "updateTopic", method: "PATCH", path: "/v1/topics/{topic_id}", auth: "creator" },
   { sdk: "topics.delete", operationId: "deleteTopic", method: "DELETE", path: "/v1/topics/{topic_id}", auth: "creator" },

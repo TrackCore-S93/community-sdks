@@ -2,10 +2,12 @@
 library;
 
 import 'dart:math';
+import 'dart:typed_data';
 
 import '../errors/exceptions.dart';
 import '../generated/models.dart';
 import '../http/transport.dart';
+import 'media_api.dart' show sendUpload;
 
 Map<String, Object?> _object(Object? json) =>
     (json! as Map).cast<String, Object?>();
@@ -179,12 +181,15 @@ final class TopicsApi {
         audience: Audience.memberOrCreator)));
   }
 
-  /// Creates a topic. Secret key only.
+  /// Creates a topic. [imageMediaId] and [coverMediaId] are images from
+  /// [uploadImage], used instead of a web address. Secret key only.
   Future<Topic> create({
     required String name,
     String? description,
     String? imageUrl,
     String? coverUrl,
+    String? imageMediaId,
+    String? coverMediaId,
     int? sortOrder,
     bool? isLive,
     bool? isTrending,
@@ -197,6 +202,8 @@ final class TopicsApi {
           'description': description,
           'image_url': imageUrl,
           'cover_url': coverUrl,
+          'image_media_id': imageMediaId,
+          'cover_media_id': coverMediaId,
           'sort_order': sortOrder,
           'is_live': isLive,
           'is_trending': isTrending,
@@ -210,6 +217,8 @@ final class TopicsApi {
     String? description,
     String? imageUrl,
     String? coverUrl,
+    String? imageMediaId,
+    String? coverMediaId,
     int? sortOrder,
     bool? isLive,
     bool? isTrending,
@@ -223,11 +232,37 @@ final class TopicsApi {
               'description': description,
               'image_url': imageUrl,
               'cover_url': coverUrl,
+              'image_media_id': imageMediaId,
+              'cover_media_id': coverMediaId,
               'sort_order': sortOrder,
               'is_live': isLive,
               'is_trending': isTrending,
             }))));
   }
+
+  /// Step 1 of 3 for a topic's image: asks for a link to send a file to.
+  /// [uploadImage] does all three. Secret key only.
+  Future<Upload> startImageUpload() async =>
+      Upload.fromJson(_object(await _transport
+          .request('POST', '/v1/topics/images', audience: Audience.creator)));
+
+  /// Step 3 of 3: tells the server the file has arrived. It checks and stores
+  /// the image. Secret key only.
+  Future<Media> completeImageUpload(String mediaId) async {
+    _required('mediaId', mediaId);
+    return Media.fromJson(_object(await _transport.request(
+        'POST', '/v1/topics/images/${_enc(mediaId)}/complete',
+        audience: Audience.creator, repeatable: true)));
+  }
+
+  /// Uploads an image for a topic: asks for a link, sends the bytes to it,
+  /// and finishes the upload. The returned image's `id` goes in
+  /// `imageMediaId` or `coverMediaId` of [create] or [update]. Secret key
+  /// only.
+  Future<Media> uploadImage(Uint8List bytes,
+          {String contentType = 'application/octet-stream'}) =>
+      sendUpload(_transport, bytes, contentType, startImageUpload,
+          completeImageUpload);
 
   /// Deletes a topic and its posts. Secret key only.
   Future<Deleted> delete(String topicId) async {

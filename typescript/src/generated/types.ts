@@ -224,6 +224,10 @@ export interface CreateTopicRequest {
   image_url?: string;
   /** The image on the topic's sheet. */
   cover_url?: string;
+  /** An image uploaded through `POST /v1/topics/images`, used as the card image instead of `image_url`. */
+  image_media_id?: string;
+  /** An image uploaded through `POST /v1/topics/images`, used as the sheet image instead of `cover_url`. */
+  cover_media_id?: string;
   /** Position in the list, lowest first. */
   sort_order?: number;
   /** Left out, the topic is live. */
@@ -242,6 +246,10 @@ export interface UpdateTopicRequest {
   image_url?: string | null;
   /** A new sheet image. */
   cover_url?: string | null;
+  /** An image uploaded through `POST /v1/topics/images`, to replace the card image. The upload it replaces is deleted. */
+  image_media_id?: string | null;
+  /** An image uploaded through `POST /v1/topics/images`, to replace the sheet image. The upload it replaces is deleted. */
+  cover_media_id?: string | null;
   /** A new position. */
   sort_order?: number | null;
   /** False hides the topic and its posts. */

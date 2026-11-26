@@ -278,7 +278,7 @@ test("requests are shaped as the API expects", async () => {
 test("the SDK has a call for every route in the contract", () => {
   const { fetch } = fakeFetch([]);
   const c = new Community({ apiKey: SECRET, baseUrl: base, fetch, runtime: "server" });
-  assert.equal(OPERATIONS.length, 69);
+  assert.equal(OPERATIONS.length, 71);
   for (const op of OPERATIONS) {
     const [namespace, method] = op.sdk.split(".");
     const owner = namespace === "client" ? c : c[namespace];
@@ -346,6 +346,34 @@ test("upload asks for a link, sends the file, and finishes", async () => {
   c2.setUser("ali");
   await assert.rejects(c2.media.upload(new Uint8Array([1, 2, 3])), ValidationError);
   assert.equal(big.calls.length, 1, "a file over the limit was sent");
+});
+
+test("topics: an image is uploaded with the secret key and named on the topic", async () => {
+  const { fetch, calls } = fakeFetch([
+    json(201, { id: "cm_med_9", status: "pending", upload: { method: "PUT", url: "https://storage.test/put?sig=9", expires_at: "" }, max_bytes: 10485760 }),
+    new Response(null, { status: 200 }),
+    json(200, { id: "cm_med_9", status: "ready" }),
+    json(201, { id: "cm_top_1", name: "Workout" }),
+    json(200, { id: "cm_top_1", name: "Workout" }),
+  ]);
+  const c = new Community({ apiKey: SECRET, baseUrl: base, fetch, runtime: "server" });
+  const image = await c.topics.uploadImage(new Uint8Array([1, 2, 3]), { contentType: "image/png" });
+  assert.equal(image.id, "cm_med_9");
+  assert.equal(calls[0].method + " " + calls[0].url, `POST ${base}/v1/topics/images`);
+  assert.equal(calls[0].headers["X-External-Id"], undefined, "a user was named");
+  assert.equal(calls[1].method + " " + calls[1].url, "PUT https://storage.test/put?sig=9");
+  assert.equal(calls[1].headers.Authorization, undefined, "the key was sent to storage");
+  assert.equal(calls[2].url, `${base}/v1/topics/images/cm_med_9/complete`);
+  await c.topics.create({ name: "Workout", imageMediaId: image.id });
+  assert.deepEqual(calls[3].body, { name: "Workout", image_media_id: "cm_med_9" });
+  await c.topics.update("cm_top_1", { coverMediaId: "cm_med_9" });
+  assert.deepEqual(calls[4].body, { cover_media_id: "cm_med_9" });
+  await assert.rejects(c.topics.uploadImage(new Uint8Array(0)), ValidationError);
+  // A publishable key is refused before anything is sent.
+  const device = fakeFetch([]);
+  const app = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch: device.fetch });
+  await assert.rejects(app.topics.uploadImage(new Uint8Array([1])));
+  assert.equal(device.calls.length, 0);
 });
 
 test("push: a phone is registered, and signing out unregisters it", async () => {

@@ -599,7 +599,7 @@ void main() {
   });
 
   test('the SDK has a call for every route in the contract', () {
-    expect(operations, hasLength(69));
+    expect(operations, hasLength(71));
     expect(operations.map((o) => o.sdk).toSet(), implemented);
   });
 
@@ -701,6 +701,47 @@ void main() {
     await expectLater(c.media.upload(Uint8List(0)),
         throwsA(isA<CommunityValidationException>()));
   });
+
+  test(
+      'topics: an image is uploaded with the secret key and named on the topic',
+      () async {
+    final adapter = FakeAdapter([
+      json(201, {
+        'id': 'cm_med_9',
+        'status': 'pending',
+        'upload': {
+          'method': 'PUT',
+          'url': 'https://storage.test/put?sig=9',
+          'expires_at': '2030-01-01T00:00:00Z'
+        },
+        'max_bytes': 100,
+      }),
+      CommunityRawResponse(
+          statusCode: 200, headers: const {}, bodyBytes: Uint8List(0)),
+      json(200, {
+        'id': 'cm_med_9',
+        'status': 'ready',
+        'url': 'https://storage.test/get',
+        'width': 10,
+        'height': 10,
+        'bytes': 5,
+        'attached': false
+      }),
+    ]);
+    final c = creator(adapter);
+    final image = await c.topics
+        .uploadImage(Uint8List.fromList([1, 2, 3]), contentType: 'image/png');
+    expect(image.id, 'cm_med_9');
+    expect(adapter.calls[0].method, 'POST');
+    expect(adapter.calls[0].path, '/v1/topics/images');
+    expect(adapter.calls[0].headers.containsKey('X-External-Id'), isFalse);
+    expect(adapter.calls[1].uri.toString(), 'https://storage.test/put?sig=9');
+    expect(adapter.calls[1].headers.containsKey('Authorization'), isFalse,
+        reason: 'the key was sent to storage');
+    expect(adapter.calls[2].path, '/v1/topics/images/cm_med_9/complete');
+    await expectLater(c.topics.uploadImage(Uint8List(0)),
+        throwsA(isA<CommunityValidationException>()));
+  });
 }
 
 const Map<String, Object?> settingsJson = {
@@ -741,6 +782,8 @@ const Set<String> implemented = {
   'topics.create',
   'topics.update',
   'topics.delete',
+  'topics.startImageUpload',
+  'topics.completeImageUpload',
   'posts.feed',
   'posts.create',
   'posts.get',
