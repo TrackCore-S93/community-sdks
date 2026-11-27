@@ -73,6 +73,18 @@ const List<OperationSpec> operations = [
     auth: 'creator'
   ),
   (
+    sdk: 'posts.byMember',
+    method: 'GET',
+    path: '/v1/community/members/{external_id}/posts',
+    auth: 'member_or_creator'
+  ),
+  (
+    sdk: 'comments.byMember',
+    method: 'GET',
+    path: '/v1/community/members/{external_id}/comments',
+    auth: 'member_or_creator'
+  ),
+  (
     sdk: 'members.list',
     method: 'GET',
     path: '/v1/community/members',
@@ -127,6 +139,12 @@ const List<OperationSpec> operations = [
     method: 'GET',
     path: '/v1/posts/{post_id}',
     auth: 'member_or_creator'
+  ),
+  (
+    sdk: 'posts.update',
+    method: 'PATCH',
+    path: '/v1/posts/{post_id}',
+    auth: 'member'
   ),
   (
     sdk: 'posts.delete',
@@ -193,6 +211,12 @@ const List<OperationSpec> operations = [
     method: 'GET',
     path: '/v1/comments/{comment_id}/replies',
     auth: 'member_or_creator'
+  ),
+  (
+    sdk: 'comments.update',
+    method: 'PATCH',
+    path: '/v1/comments/{comment_id}',
+    auth: 'member'
   ),
   (
     sdk: 'comments.delete',

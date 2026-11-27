@@ -190,7 +190,7 @@ export class Community {
   /** Topics. Creating and editing them is the creator's, on a backend. */
   get topics(): Pick<TopicsAPI, "list" | "get"> { return this.#ready.topics; }
   /** Posts, the feed and search. Pinning is the creator's, on a backend. */
-  get posts(): Pick<PostsAPI, "feed" | "get" | "create" | "delete" | "search"> { return this.#ready.posts; }
+  get posts(): Pick<PostsAPI, "feed" | "get" | "create" | "update" | "byMember" | "delete" | "search"> { return this.#ready.posts; }
   /** Comments and replies. */
   get comments(): CommentsAPI { return this.#ready.comments; }
   /** Emoji reactions. */

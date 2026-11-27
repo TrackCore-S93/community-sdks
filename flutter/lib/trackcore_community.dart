@@ -39,4 +39,4 @@ export 'src/http/transport.dart'
         communitySessionHeader;
 
 /// The version of this SDK.
-const String communitySdkVersion = '0.1.1';
+const String communitySdkVersion = '0.1.2';

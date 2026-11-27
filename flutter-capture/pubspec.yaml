@@ -2,7 +2,7 @@ name: trackcore_community_capture
 description: >-
   Opens the camera or the gallery, picks a file or records a voice note, and
   uploads it to Community in one call. An add-on to trackcore_community.
-version: 0.1.1
+version: 0.1.2
 repository: https://github.com/TrackCore-S93/community-sdks/tree/main/flutter-capture
 documentation: https://community.trackcore.app/developer/sdk/flutter/media
 publish_to: none
@@ -21,7 +21,7 @@ dependencies:
   trackcore_community:
     git:
       url: https://github.com/TrackCore-S93/community-sdks.git
-      ref: flutter-v0.1.1
+      ref: flutter-v0.1.2
       path: flutter
 
 dev_dependencies:

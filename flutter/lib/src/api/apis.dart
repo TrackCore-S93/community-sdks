@@ -320,6 +320,34 @@ final class PostsApi {
         audience: Audience.memberOrCreator)));
   }
 
+  /// Edits the user's own post: the text, the topic, or both. Pass only what
+  /// changes. The pictures stay as posted, and the post comes back with
+  /// `editedAt` set. Someone else's post is refused with
+  /// [CommunityErrorCode.forbidden].
+  Future<Post> update(String postId, {String? body, String? topicId}) async {
+    _required('postId', postId);
+    if (body == null && topicId == null) {
+      throw const CommunityValidationException(
+          'body', 'Pass body, topicId, or both.');
+    }
+    return Post.fromJson(_object(await _transport.request(
+        'PATCH', '/v1/posts/${_enc(postId)}',
+        audience: Audience.member,
+        body: _given({'body': body, 'topic_id': topicId}))));
+  }
+
+  /// The posts one member wrote, newest first, across every topic. For a "My
+  /// posts" tab, pass the user's own id. `nextCursor` goes back in as
+  /// [before].
+  Future<MemberPosts> byMember(String externalId,
+      {int? limit, String? before}) async {
+    _required('externalId', externalId);
+    return MemberPosts.fromJson(_object(await _transport.request(
+        'GET', '/v1/community/members/${_enc(externalId)}/posts',
+        audience: Audience.memberOrCreator,
+        query: {'limit': limit, 'before': before})));
+  }
+
   /// Deletes a post: a member their own, the creator's backend any.
   Future<Deleted> delete(String postId) async {
     _required('postId', postId);
@@ -399,6 +427,28 @@ final class CommentsApi {
         idempotencyKey: idempotencyKey ?? newIdempotencyKey(),
         body: _given(
             {'body': body, 'media_ids': mediaIds, 'parent_id': parentId}))));
+  }
+
+  /// Edits the text of the user's own comment or reply. The pictures stay as
+  /// posted, and the comment comes back with `editedAt` set. Someone else's
+  /// comment is refused with [CommunityErrorCode.forbidden].
+  Future<Comment> update(String commentId, {required String body}) async {
+    _required('commentId', commentId);
+    return Comment.fromJson(_object(await _transport.request(
+        'PATCH', '/v1/comments/${_enc(commentId)}',
+        audience: Audience.member, body: {'body': body})));
+  }
+
+  /// The comments and replies one member wrote, newest first, each with the
+  /// post it is on. For a "My comments" tab, pass the user's own id.
+  /// `nextCursor` goes back in as [before].
+  Future<MemberComments> byMember(String externalId,
+      {int? limit, String? before}) async {
+    _required('externalId', externalId);
+    return MemberComments.fromJson(_object(await _transport.request(
+        'GET', '/v1/community/members/${_enc(externalId)}/comments',
+        audience: Audience.memberOrCreator,
+        query: {'limit': limit, 'before': before})));
   }
 
   /// Deletes a comment: a member their own, the creator's backend any.

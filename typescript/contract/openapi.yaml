@@ -917,6 +917,156 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/community/members/{external_id}/posts:
+    get:
+      operationId: listMemberPosts
+      tags: [Posts]
+      summary: "One member's posts"
+      description: "The posts one member wrote, newest first, across every topic, pinned or not. For the \"My posts\" tab of a profile, send the user's own id. The rules are the profile's: a member can always list their own, and another member's only while the creator allows viewing profiles. Posts the reader could not see in the feed (hidden, in a hidden topic) are left out. Not found when the member does not exist or there is a block between them and the reader.\n\n**Who may call it.** For one end user (a publishable key with a session token, or a secret key with `X-External-Id`), or the creator's backend with a secret key alone, which also sees hidden topics."
+      x-community-auth: member_or_creator
+      x-community-sdk: posts.byMember
+      parameters:
+        - $ref: '#/components/parameters/ExternalId'
+        - $ref: '#/components/parameters/LimitPosts'
+        - name: before
+          in: query
+          required: false
+          description: "A `next_cursor`: the next older ones."
+          schema:
+            type: string
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      responses:
+        "200":
+          description: "One page of the member's posts."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberPosts'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`, `profile_viewing_disabled`."
+          x-community-codes: [user_scope_violation, profile_viewing_disabled]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "404":
+          description: "One of: `not_found`."
+          x-community-codes: [not_found]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/community/members/{external_id}/comments:
+    get:
+      operationId: listMemberComments
+      tags: [Comments]
+      summary: "One member's comments"
+      description: "The comments and replies one member wrote, newest first, each with the post it is on. For the \"My comments\" tab of a profile, send the user's own id. The rules are the profile's: a member can always list their own, and another member's only while the creator allows viewing profiles. Comments the reader could not see in their thread are left out. Not found when the member does not exist or there is a block between them and the reader.\n\n**Who may call it.** For one end user (a publishable key with a session token, or a secret key with `X-External-Id`), or the creator's backend with a secret key alone, which also sees hidden topics."
+      x-community-auth: member_or_creator
+      x-community-sdk: comments.byMember
+      parameters:
+        - $ref: '#/components/parameters/ExternalId'
+        - $ref: '#/components/parameters/Limit'
+        - name: before
+          in: query
+          required: false
+          description: "A `next_cursor`: the next older ones."
+          schema:
+            type: string
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      responses:
+        "200":
+          description: "One page of the member's comments."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberComments'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`, `profile_viewing_disabled`."
+          x-community-codes: [user_scope_violation, profile_viewing_disabled]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "404":
+          description: "One of: `not_found`."
+          x-community-codes: [not_found]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /v1/community/members:
     get:
       operationId: listMembers
@@ -1713,6 +1863,93 @@ paths:
         "404":
           description: "One of: `not_found`."
           x-community-codes: [not_found]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    patch:
+      operationId: updatePost
+      tags: [Posts]
+      summary: "Edit a post"
+      description: "The author changes the text, moves the post to another topic, or both, and `edited_at` is set. Send only what changes; at least one of the two. The pictures stay as posted. The text may be emptied only when the post has images. Sending what the post already says changes nothing. Only the author can edit: anyone else gets `forbidden`. Not found when the post is gone or hidden, or when the new topic does not exist or is hidden.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      x-community-auth: member
+      x-community-sdk: posts.update
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditPostRequest'
+      responses:
+        "200":
+          description: "The post as it is now."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`, `forbidden`."
+          x-community-codes: [user_scope_violation, forbidden]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "404":
+          description: "One of: `not_found`."
+          x-community-codes: [not_found]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "413":
+          description: "One of: `payload_too_large`."
+          x-community-codes: [payload_too_large]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "422":
+          description: "One of: `validation_failed`."
+          x-community-codes: [validation_failed]
           content:
             application/json:
               schema:
@@ -2548,6 +2785,93 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
   /v1/comments/{comment_id}:
+    patch:
+      operationId: updateComment
+      tags: [Comments]
+      summary: "Edit a comment"
+      description: "The author changes the text of a comment or a reply, and `edited_at` is set. The pictures stay as posted. The text may be emptied only when the comment has images. Sending the text it already has changes nothing. Only the author can edit: anyone else gets `forbidden`.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      x-community-auth: member
+      x-community-sdk: comments.update
+      parameters:
+        - $ref: '#/components/parameters/CommentId'
+        - $ref: '#/components/parameters/SessionHeader'
+        - $ref: '#/components/parameters/ExternalIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditCommentRequest'
+      responses:
+        "200":
+          description: "The comment as it is now."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        "400":
+          description: "One of: `ambiguous_credentials`, `invalid_request`."
+          x-community-codes: [ambiguous_credentials, invalid_request]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "401":
+          description: "One of: `credential_missing`, `credential_malformed`, `credential_unknown`, `credential_revoked`, `session_invalid`."
+          x-community-codes: [credential_missing, credential_malformed, credential_unknown, credential_revoked, session_invalid]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "403":
+          description: "One of: `user_scope_violation`, `forbidden`."
+          x-community-codes: [user_scope_violation, forbidden]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "404":
+          description: "One of: `not_found`."
+          x-community-codes: [not_found]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "413":
+          description: "One of: `payload_too_large`."
+          x-community-codes: [payload_too_large]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "422":
+          description: "One of: `validation_failed`."
+          x-community-codes: [validation_failed]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "500":
+          description: "One of: `internal_error`."
+          x-community-codes: [internal_error]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "503":
+          description: "One of: `service_unavailable`."
+          x-community-codes: [service_unavailable]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        "504":
+          description: "One of: `timeout`."
+          x-community-codes: [timeout]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     delete:
       operationId: deleteComment
       tags: [Comments]
@@ -5932,7 +6256,7 @@ components:
       type: object
       description: "One post in the feed."
       x-go-type: httpx.postBody
-      required: [id, topic_id, author, body, images, reactions, comments_count, is_mine, is_pinned, pinned_at, created_at]
+      required: [id, topic_id, author, body, images, reactions, comments_count, is_mine, is_pinned, pinned_at, edited_at, created_at]
       properties:
         id:
           type: string
@@ -5976,6 +6300,10 @@ components:
           type: [string, 'null']
           format: date-time
           description: "When it was pinned, or null."
+        edited_at:
+          type: [string, 'null']
+          format: date-time
+          description: "When the author last changed the text or the topic, or null when it was never edited. Show an \"edited\" mark when it is set."
         created_at:
           type: string
           format: date-time
@@ -6077,7 +6405,7 @@ components:
       type: object
       description: "One comment or reply."
       x-go-type: httpx.commentBody
-      required: [id, post_id, parent_id, author, body, images, reactions, replies_count, is_mine, created_at]
+      required: [id, post_id, parent_id, author, body, images, reactions, replies_count, is_mine, edited_at, created_at]
       properties:
         id:
           type: string
@@ -6116,10 +6444,148 @@ components:
           type: boolean
           description: "True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach."
           example: false
+        edited_at:
+          type: [string, 'null']
+          format: date-time
+          description: "When the author last changed the text, or null when it was never edited. Show an \"edited\" mark when it is set."
         created_at:
           type: string
           format: date-time
           description: "When it was written."
+    MemberComment:
+      type: object
+      description: "One comment or reply in the list of a member's comments: a `Comment`, with the post it is on."
+      x-go-type: httpx.memberCommentBody
+      required: [id, post_id, parent_id, author, body, images, reactions, replies_count, is_mine, edited_at, created_at, post]
+      properties:
+        id:
+          type: string
+          description: "The comment's id."
+          example: "cm_cmt_…"
+        post_id:
+          type: string
+          description: "The post it is on."
+          example: "cm_post_…"
+        parent_id:
+          type: [string, 'null']
+          description: "The comment this replies to, or null for a comment on the post."
+        author:
+          description: "Who wrote it."
+          allOf:
+            - $ref: '#/components/schemas/Author'
+        body:
+          type: string
+          description: "The text. May be empty when the comment has images."
+          example: "Nice!"
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+          description: "The comment's pictures."
+        reactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reaction'
+          description: "The emoji on the comment."
+        replies_count:
+          type: integer
+          description: "How many replies it has."
+          example: 0
+        is_mine:
+          type: boolean
+          description: "True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach."
+          example: false
+        edited_at:
+          type: [string, 'null']
+          format: date-time
+          description: "When the author last changed the text, or null when it was never edited. Show an \"edited\" mark when it is set."
+        created_at:
+          type: string
+          format: date-time
+          description: "When it was written."
+        post:
+          description: "The post the comment is on."
+          allOf:
+            - $ref: '#/components/schemas/CommentPost'
+    CommentPost:
+      type: object
+      description: "The post a comment is on, to show beside the comment."
+      x-go-type: httpx.commentPostBody
+      required: [id, topic_id, author, body]
+      properties:
+        id:
+          type: string
+          description: "The post's id."
+          example: "cm_post_…"
+        topic_id:
+          type: string
+          description: "The topic the post is in."
+          example: "cm_top_…"
+        author:
+          description: "Who wrote the post."
+          allOf:
+            - $ref: '#/components/schemas/Author'
+        body:
+          type: string
+          description: "The post's text. May be empty when the post has images."
+          example: "Leg day"
+    MemberComments:
+      type: object
+      description: "One page of a member's comments, newest first."
+      x-go-type: httpx.memberCommentsBody
+      required: [comments, next_cursor, has_more]
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/MemberComment'
+          description: "The comments on this page."
+        next_cursor:
+          type: [string, 'null']
+          description: "Send as `before` for the older comments. Null at the end."
+        has_more:
+          type: boolean
+          description: "True when there is another page."
+    MemberPosts:
+      type: object
+      description: "One page of a member's posts, newest first."
+      x-go-type: httpx.memberPostsBody
+      required: [posts, next_cursor, has_more]
+      properties:
+        posts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+          description: "The posts on this page."
+        next_cursor:
+          type: [string, 'null']
+          description: "Send as `before` for the older posts. Null at the end."
+        has_more:
+          type: boolean
+          description: "True when there is another page."
+    EditPostRequest:
+      type: object
+      description: "What to change on a post. Send the text, the topic, or both."
+      x-go-type: httpx.editPostRequest
+      properties:
+        body:
+          type: string
+          description: "The new text. May be empty only when the post has images. Left out, the text stays."
+          example: "Leg day, take two"
+        topic_id:
+          type: string
+          description: "The topic to move the post to. Left out, it stays where it is."
+          example: "cm_top_…"
+    EditCommentRequest:
+      type: object
+      description: "The new text of a comment."
+      x-go-type: httpx.editCommentRequest
+      required: [body]
+      properties:
+        body:
+          type: string
+          description: "The text. May be empty only when the comment has images."
+          example: "Nice work!"
     CommentPage:
       type: object
       description: "One page of comments or replies, oldest first."
@@ -7182,6 +7648,10 @@ components:
           type: string
           description: "The topic concerned. Absent on `notification.created`."
           example: "cm_top_…"
+        previous_topic_id:
+          type: string
+          description: "On `post.updated`, the topic the post was moved out of, when the edit changed its topic. A screen showing that topic takes the post out of its list."
+          example: "cm_top_…"
         post_id:
           type: string
           description: "The post concerned. Absent on coaching-chat events and on `notification.created` for a coach's message."
@@ -7252,7 +7722,7 @@ components:
     LiveEventType:
       type: string
       description: "The kinds of live message."
-      enum: ["post.created", "post.deleted", "post.pinned", "post.unpinned", "post.reactions", "comment.created", "comment.deleted", "comment.reactions", "notification.created", "coach_message.created", "coach_message.updated", "coach_message.deleted", "coach_chat.read", "coach_chat.member_read"]
+      enum: ["post.created", "post.updated", "post.deleted", "post.pinned", "post.unpinned", "post.reactions", "comment.created", "comment.updated", "comment.deleted", "comment.reactions", "notification.created", "coach_message.created", "coach_message.updated", "coach_message.deleted", "coach_chat.read", "coach_chat.member_read"]
     ErrorEnvelope:
       type: object
       description: "The body of every non-2xx reply."

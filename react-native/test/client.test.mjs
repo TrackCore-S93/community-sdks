@@ -41,7 +41,7 @@ test("it is the JavaScript SDK underneath: the same classes and helpers", () => 
     assert.equal(rn[name], core[name], `${name} is not the core's own`);
   }
   assert.notEqual(rn.Community, core.Community, "the device client is this package's own");
-  assert.equal(rn.REACT_NATIVE_SDK_VERSION, "0.1.1");
+  assert.equal(rn.REACT_NATIVE_SDK_VERSION, "0.1.2");
 });
 
 test("signing in mints a session, and calls carry it", async () => {

@@ -320,6 +320,8 @@ export interface Post {
   is_pinned: boolean;
   /** When it was pinned, or null. */
   pinned_at: string | null;
+  /** When the author last changed the text or the topic, or null when it was never edited. Show an "edited" mark when it is set. */
+  edited_at: string | null;
   /** When it was posted. */
   created_at: string;
 }
@@ -394,8 +396,84 @@ export interface Comment {
   replies_count: number;
   /** True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach. */
   is_mine: boolean;
+  /** When the author last changed the text, or null when it was never edited. Show an "edited" mark when it is set. */
+  edited_at: string | null;
   /** When it was written. */
   created_at: string;
+}
+
+/** One comment or reply in the list of a member's comments: a `Comment`, with the post it is on. */
+export interface MemberComment {
+  /** The comment's id. */
+  id: string;
+  /** The post it is on. */
+  post_id: string;
+  /** The comment this replies to, or null for a comment on the post. */
+  parent_id: string | null;
+  /** Who wrote it. */
+  author: Author;
+  /** The text. May be empty when the comment has images. */
+  body: string;
+  /** The comment's pictures. */
+  images: Image[];
+  /** The emoji on the comment. */
+  reactions: Reaction[];
+  /** How many replies it has. */
+  replies_count: number;
+  /** True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach. */
+  is_mine: boolean;
+  /** When the author last changed the text, or null when it was never edited. Show an "edited" mark when it is set. */
+  edited_at: string | null;
+  /** When it was written. */
+  created_at: string;
+  /** The post the comment is on. */
+  post: CommentPost;
+}
+
+/** The post a comment is on, to show beside the comment. */
+export interface CommentPost {
+  /** The post's id. */
+  id: string;
+  /** The topic the post is in. */
+  topic_id: string;
+  /** Who wrote the post. */
+  author: Author;
+  /** The post's text. May be empty when the post has images. */
+  body: string;
+}
+
+/** One page of a member's comments, newest first. */
+export interface MemberComments {
+  /** The comments on this page. */
+  comments: MemberComment[];
+  /** Send as `before` for the older comments. Null at the end. */
+  next_cursor: string | null;
+  /** True when there is another page. */
+  has_more: boolean;
+}
+
+/** One page of a member's posts, newest first. */
+export interface MemberPosts {
+  /** The posts on this page. */
+  posts: Post[];
+  /** Send as `before` for the older posts. Null at the end. */
+  next_cursor: string | null;
+  /** True when there is another page. */
+  has_more: boolean;
+}
+
+/** What to change on a post. Send the text, the topic, or both. */
+export interface EditPostRequest {
+  /** The new text. May be empty only when the post has images. Left out, the text stays. */
+  body?: string;
+  /** The topic to move the post to. Left out, it stays where it is. */
+  topic_id?: string;
+}
+
+/** The new text of a comment. */
+export interface EditCommentRequest {
+  /** The text. May be empty only when the comment has images. */
+  body: string;
 }
 
 /** One page of comments or replies, oldest first. */
@@ -974,6 +1052,8 @@ export interface LiveEvent {
   type: LiveEventType;
   /** The topic concerned. Absent on `notification.created`. */
   topic_id?: string;
+  /** On `post.updated`, the topic the post was moved out of, when the edit changed its topic. A screen showing that topic takes the post out of its list. */
+  previous_topic_id?: string;
   /** The post concerned. Absent on coaching-chat events and on `notification.created` for a coach's message. */
   post_id?: string;
   /** The comment concerned, for comment events. */
@@ -1018,7 +1098,7 @@ export type MediaStatus = "pending" | "ready" | "failed";
 export type NotificationKind = "post_reaction" | "comment_reaction" | "post_comment" | "comment_reply" | "coach_message";
 
 /** The kinds of live message. */
-export type LiveEventType = "post.created" | "post.deleted" | "post.pinned" | "post.unpinned" | "post.reactions" | "comment.created" | "comment.deleted" | "comment.reactions" | "notification.created" | "coach_message.created" | "coach_message.updated" | "coach_message.deleted" | "coach_chat.read" | "coach_chat.member_read";
+export type LiveEventType = "post.created" | "post.updated" | "post.deleted" | "post.pinned" | "post.unpinned" | "post.reactions" | "comment.created" | "comment.updated" | "comment.deleted" | "comment.reactions" | "notification.created" | "coach_message.created" | "coach_message.updated" | "coach_message.deleted" | "coach_chat.read" | "coach_chat.member_read";
 
 /** The body of every non-2xx reply. */
 export interface ErrorEnvelope {

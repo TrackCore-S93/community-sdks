@@ -597,6 +597,7 @@ final class Post {
     required this.isMine,
     required this.isPinned,
     this.pinnedAt,
+    this.editedAt,
     required this.createdAt,
   });
 
@@ -620,6 +621,9 @@ final class Post {
         pinnedAt: json['pinned_at'] == null
             ? null
             : DateTime.parse(json['pinned_at'] as String),
+        editedAt: json['edited_at'] == null
+            ? null
+            : DateTime.parse(json['edited_at'] as String),
         createdAt: DateTime.parse(json['created_at'] as String),
       );
 
@@ -652,6 +656,9 @@ final class Post {
 
   /// When it was pinned, or null.
   final DateTime? pinnedAt;
+
+  /// When the author last changed the text or the topic, or null when it was never edited. Show an "edited" mark when it is set.
+  final DateTime? editedAt;
 
   /// When it was posted.
   final DateTime createdAt;
@@ -781,6 +788,7 @@ final class Comment {
     required this.reactions,
     required this.repliesCount,
     required this.isMine,
+    this.editedAt,
     required this.createdAt,
   });
 
@@ -801,6 +809,9 @@ final class Comment {
             .toList(growable: false),
         repliesCount: (json['replies_count'] as num).toInt(),
         isMine: json['is_mine'] as bool,
+        editedAt: json['edited_at'] == null
+            ? null
+            : DateTime.parse(json['edited_at'] as String),
         createdAt: DateTime.parse(json['created_at'] as String),
       );
 
@@ -831,8 +842,180 @@ final class Comment {
   /// True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach.
   final bool isMine;
 
+  /// When the author last changed the text, or null when it was never edited. Show an "edited" mark when it is set.
+  final DateTime? editedAt;
+
   /// When it was written.
   final DateTime createdAt;
+}
+
+/// One comment or reply in the list of a member's comments: a `Comment`, with the post it is on.
+final class MemberComment {
+  /// Builds a [MemberComment]. Normally it comes from the API.
+  const MemberComment({
+    required this.id,
+    required this.postId,
+    this.parentId,
+    required this.author,
+    required this.body,
+    required this.images,
+    required this.reactions,
+    required this.repliesCount,
+    required this.isMine,
+    this.editedAt,
+    required this.createdAt,
+    required this.post,
+  });
+
+  /// Reads a [MemberComment] from the API's JSON.
+  factory MemberComment.fromJson(Map<String, Object?> json) => MemberComment(
+        id: json['id'] as String,
+        postId: json['post_id'] as String,
+        parentId: json['parent_id'] as String?,
+        author:
+            Author.fromJson((json['author'] as Map).cast<String, Object?>()),
+        body: json['body'] as String,
+        images: (json['images'] as List)
+            .map((e) =>
+                CommunityImage.fromJson((e as Map).cast<String, Object?>()))
+            .toList(growable: false),
+        reactions: (json['reactions'] as List)
+            .map((e) => Reaction.fromJson((e as Map).cast<String, Object?>()))
+            .toList(growable: false),
+        repliesCount: (json['replies_count'] as num).toInt(),
+        isMine: json['is_mine'] as bool,
+        editedAt: json['edited_at'] == null
+            ? null
+            : DateTime.parse(json['edited_at'] as String),
+        createdAt: DateTime.parse(json['created_at'] as String),
+        post:
+            CommentPost.fromJson((json['post'] as Map).cast<String, Object?>()),
+      );
+
+  /// The comment's id.
+  final String id;
+
+  /// The post it is on.
+  final String postId;
+
+  /// The comment this replies to, or null for a comment on the post.
+  final String? parentId;
+
+  /// Who wrote it.
+  final Author author;
+
+  /// The text. May be empty when the comment has images.
+  final String body;
+
+  /// The comment's pictures.
+  final List<CommunityImage> images;
+
+  /// The emoji on the comment.
+  final List<Reaction> reactions;
+
+  /// How many replies it has.
+  final int repliesCount;
+
+  /// True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach.
+  final bool isMine;
+
+  /// When the author last changed the text, or null when it was never edited. Show an "edited" mark when it is set.
+  final DateTime? editedAt;
+
+  /// When it was written.
+  final DateTime createdAt;
+
+  /// The post the comment is on.
+  final CommentPost post;
+}
+
+/// The post a comment is on, to show beside the comment.
+final class CommentPost {
+  /// Builds a [CommentPost]. Normally it comes from the API.
+  const CommentPost({
+    required this.id,
+    required this.topicId,
+    required this.author,
+    required this.body,
+  });
+
+  /// Reads a [CommentPost] from the API's JSON.
+  factory CommentPost.fromJson(Map<String, Object?> json) => CommentPost(
+        id: json['id'] as String,
+        topicId: json['topic_id'] as String,
+        author:
+            Author.fromJson((json['author'] as Map).cast<String, Object?>()),
+        body: json['body'] as String,
+      );
+
+  /// The post's id.
+  final String id;
+
+  /// The topic the post is in.
+  final String topicId;
+
+  /// Who wrote the post.
+  final Author author;
+
+  /// The post's text. May be empty when the post has images.
+  final String body;
+}
+
+/// One page of a member's comments, newest first.
+final class MemberComments {
+  /// Builds a [MemberComments]. Normally it comes from the API.
+  const MemberComments({
+    required this.comments,
+    this.nextCursor,
+    required this.hasMore,
+  });
+
+  /// Reads a [MemberComments] from the API's JSON.
+  factory MemberComments.fromJson(Map<String, Object?> json) => MemberComments(
+        comments: (json['comments'] as List)
+            .map((e) =>
+                MemberComment.fromJson((e as Map).cast<String, Object?>()))
+            .toList(growable: false),
+        nextCursor: json['next_cursor'] as String?,
+        hasMore: json['has_more'] as bool,
+      );
+
+  /// The comments on this page.
+  final List<MemberComment> comments;
+
+  /// Send as `before` for the older comments. Null at the end.
+  final String? nextCursor;
+
+  /// True when there is another page.
+  final bool hasMore;
+}
+
+/// One page of a member's posts, newest first.
+final class MemberPosts {
+  /// Builds a [MemberPosts]. Normally it comes from the API.
+  const MemberPosts({
+    required this.posts,
+    this.nextCursor,
+    required this.hasMore,
+  });
+
+  /// Reads a [MemberPosts] from the API's JSON.
+  factory MemberPosts.fromJson(Map<String, Object?> json) => MemberPosts(
+        posts: (json['posts'] as List)
+            .map((e) => Post.fromJson((e as Map).cast<String, Object?>()))
+            .toList(growable: false),
+        nextCursor: json['next_cursor'] as String?,
+        hasMore: json['has_more'] as bool,
+      );
+
+  /// The posts on this page.
+  final List<Post> posts;
+
+  /// Send as `before` for the older posts. Null at the end.
+  final String? nextCursor;
+
+  /// True when there is another page.
+  final bool hasMore;
 }
 
 /// One page of comments or replies, oldest first.
@@ -2133,6 +2316,7 @@ final class LiveEvent {
   const LiveEvent({
     required this.type,
     this.topicId,
+    this.previousTopicId,
     this.postId,
     this.commentId,
     this.messageId,
@@ -2148,6 +2332,7 @@ final class LiveEvent {
   factory LiveEvent.fromJson(Map<String, Object?> json) => LiveEvent(
         type: LiveEventType.fromWire(json['type'] as String?),
         topicId: json['topic_id'] as String?,
+        previousTopicId: json['previous_topic_id'] as String?,
         postId: json['post_id'] as String?,
         commentId: json['comment_id'] as String?,
         messageId: json['message_id'] as String?,
@@ -2171,6 +2356,9 @@ final class LiveEvent {
 
   /// The topic concerned. Absent on `notification.created`.
   final String? topicId;
+
+  /// On `post.updated`, the topic the post was moved out of, when the edit changed its topic. A screen showing that topic takes the post out of its list.
+  final String? previousTopicId;
 
   /// The post concerned. Absent on coaching-chat events and on `notification.created` for a coach's message.
   final String? postId;
@@ -2320,11 +2508,13 @@ enum NotificationKind {
 /// The kinds of live message.
 enum LiveEventType {
   postCreated('post.created'),
+  postUpdated('post.updated'),
   postDeleted('post.deleted'),
   postPinned('post.pinned'),
   postUnpinned('post.unpinned'),
   postReactions('post.reactions'),
   commentCreated('comment.created'),
+  commentUpdated('comment.updated'),
   commentDeleted('comment.deleted'),
   commentReactions('comment.reactions'),
   notificationCreated('notification.created'),

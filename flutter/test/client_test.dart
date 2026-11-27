@@ -599,7 +599,7 @@ void main() {
   });
 
   test('the SDK has a call for every route in the contract', () {
-    expect(operations, hasLength(71));
+    expect(operations, hasLength(75));
     expect(operations.map((o) => o.sdk).toSet(), implemented);
   });
 
@@ -742,6 +742,83 @@ void main() {
     await expectLater(c.topics.uploadImage(Uint8List(0)),
         throwsA(isA<CommunityValidationException>()));
   });
+
+  test("a member's posts and comments are listed, and their own are edited",
+      () async {
+    const edited = '2026-11-27T10:00:00Z';
+    final post = {...postJson, 'body': 'Leg day!', 'edited_at': edited};
+    final comment = <String, Object?>{
+      'id': 'cm_cmt_1',
+      'post_id': postJson['id'],
+      'parent_id': null,
+      'author': postJson['author'],
+      'body': 'Nice work',
+      'images': <Object?>[],
+      'reactions': <Object?>[],
+      'replies_count': 0,
+      'is_mine': true,
+      'edited_at': edited,
+      'created_at': '2026-11-27T09:00:00Z',
+    };
+    final adapter = FakeAdapter([
+      json(200, {
+        'posts': [post, postJson],
+        'next_cursor': 'c1',
+        'has_more': true
+      }),
+      json(200, {
+        'comments': [
+          {
+            ...comment,
+            'post': {
+              'id': postJson['id'],
+              'topic_id': postJson['topic_id'],
+              'author': postJson['author'],
+              'body': 'Leg day!'
+            }
+          }
+        ],
+        'next_cursor': null,
+        'has_more': false
+      }),
+      json(200, post),
+      json(200, comment),
+    ]);
+    final c = creator(adapter)..setUser('ali');
+
+    final posts = await c.posts.byMember('ali', limit: 10, before: 'c0');
+    expect(adapter.calls[0].method, 'GET');
+    expect(adapter.calls[0].path,
+        '/v1/community/members/ali/posts?limit=10&before=c0');
+    expect(posts.posts.first.editedAt, DateTime.parse(edited));
+    expect(posts.posts.last.editedAt, isNull);
+    expect(posts.nextCursor, 'c1');
+    expect(posts.hasMore, isTrue);
+
+    final comments = await c.comments.byMember('a/li');
+    expect(adapter.calls[1].path, '/v1/community/members/a%2Fli/comments');
+    expect(comments.comments.single.post.body, 'Leg day!');
+    expect(comments.comments.single.editedAt, DateTime.parse(edited));
+    expect(comments.nextCursor, isNull);
+
+    final changed = await c.posts
+        .update('cm_post_1', body: 'Leg day!', topicId: 'cm_top_2');
+    expect(adapter.calls[2].method, 'PATCH');
+    expect(adapter.calls[2].path, '/v1/posts/cm_post_1');
+    expect(adapter.calls[2].json, {'body': 'Leg day!', 'topic_id': 'cm_top_2'});
+    expect(changed.editedAt, DateTime.parse(edited));
+
+    final said = await c.comments.update('cm_cmt_1', body: 'Nice work');
+    expect(adapter.calls[3].method, 'PATCH');
+    expect(adapter.calls[3].path, '/v1/comments/cm_cmt_1');
+    expect(adapter.calls[3].json, {'body': 'Nice work'});
+    expect(said.body, 'Nice work');
+
+    // Nothing to change is caught before anything is sent.
+    await expectLater(c.posts.update('cm_post_1'),
+        throwsA(isA<CommunityValidationException>()));
+    expect(adapter.calls, hasLength(4));
+  });
 }
 
 const Map<String, Object?> settingsJson = {
@@ -788,6 +865,10 @@ const Set<String> implemented = {
   'posts.create',
   'posts.get',
   'posts.delete',
+  'posts.update',
+  'posts.byMember',
+  'comments.update',
+  'comments.byMember',
   'posts.pin',
   'posts.unpin',
   'posts.search',

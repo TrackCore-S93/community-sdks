@@ -255,6 +255,34 @@ export class PostsAPI extends Namespace {
     return this.transport.request({ method: "GET", path: `/v1/posts/${enc(postId)}`, audience: "member_or_creator", signal: options.signal });
   }
 
+  /**
+   * Edits the user's own post: the text, the topic, or both. Send only what
+   * changes. The pictures stay as posted, and the post comes back with
+   * `edited_at` set. Someone else's post is refused with `forbidden`.
+   */
+  update(postId: string, params: { body?: string; topicId?: string } & CallOptions): Promise<T.Post> {
+    required("postId", postId);
+    if (params.body === undefined && params.topicId === undefined) {
+      throw new ValidationError("body", "Send body, topicId, or both.");
+    }
+    return this.transport.request({
+      method: "PATCH", path: `/v1/posts/${enc(postId)}`, audience: "member", signal: params.signal,
+      body: { body: params.body, topic_id: params.topicId },
+    });
+  }
+
+  /**
+   * The posts one member wrote, newest first, across every topic. For a "My
+   * posts" tab, pass the user's own id. `next_cursor` goes back in as `before`.
+   */
+  byMember(externalId: string, params: { limit?: number; before?: string } & CallOptions = {}): Promise<T.MemberPosts> {
+    required("externalId", externalId);
+    return this.transport.request({
+      method: "GET", path: `/v1/community/members/${enc(externalId)}/posts`, audience: "member_or_creator", signal: params.signal,
+      query: { limit: params.limit, before: params.before },
+    });
+  }
+
   /** Deletes a post: a member their own, the creator's backend any. */
   delete(postId: string, options: CallOptions = {}): Promise<T.Deleted> {
     required("postId", postId);
@@ -315,6 +343,33 @@ export class CommentsAPI extends Namespace {
       method: "POST", path: `/v1/posts/${enc(postId)}/comments`, audience: "member", signal: params.signal,
       idempotencyKey: params.idempotencyKey ?? newIdempotencyKey(),
       body: { body: params.body, media_ids: params.mediaIds, parent_id: params.parentId },
+    });
+  }
+
+  /**
+   * Edits the text of the user's own comment or reply. The pictures stay as
+   * posted, and the comment comes back with `edited_at` set. Someone else's
+   * comment is refused with `forbidden`.
+   */
+  update(commentId: string, params: { body: string } & CallOptions): Promise<T.Comment> {
+    required("commentId", commentId);
+    if (typeof params.body !== "string") throw new ValidationError("body", "body is required.");
+    return this.transport.request({
+      method: "PATCH", path: `/v1/comments/${enc(commentId)}`, audience: "member", signal: params.signal,
+      body: { body: params.body },
+    });
+  }
+
+  /**
+   * The comments and replies one member wrote, newest first, each with the
+   * post it is on. For a "My comments" tab, pass the user's own id.
+   * `next_cursor` goes back in as `before`.
+   */
+  byMember(externalId: string, params: { limit?: number; before?: string } & CallOptions = {}): Promise<T.MemberComments> {
+    required("externalId", externalId);
+    return this.transport.request({
+      method: "GET", path: `/v1/community/members/${enc(externalId)}/comments`, audience: "member_or_creator", signal: params.signal,
+      query: { limit: params.limit, before: params.before },
     });
   }
 

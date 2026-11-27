@@ -1,3 +1,13 @@
+## 0.1.2
+
+- `posts.update` and `comments.update`: a member edits their own post (text,
+  topic, or both) or comment (text). `Post` and `Comment` carry `editedAt`.
+- `posts.byMember` and `comments.byMember`: one member's posts and comments,
+  newest first, for the tabs of a profile. Each comment comes with its post.
+- Live: `post.updated` and `comment.updated`; `previousTopicId` on a post
+  that moved to another topic.
+- `topics.uploadImage`: upload a topic's image and cover (creator).
+
 ## 0.1.1
 
 - `coachChat`: the coaching chat, a member's one-to-one chat with their

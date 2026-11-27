@@ -278,7 +278,7 @@ test("requests are shaped as the API expects", async () => {
 test("the SDK has a call for every route in the contract", () => {
   const { fetch } = fakeFetch([]);
   const c = new Community({ apiKey: SECRET, baseUrl: base, fetch, runtime: "server" });
-  assert.equal(OPERATIONS.length, 71);
+  assert.equal(OPERATIONS.length, 75);
   for (const op of OPERATIONS) {
     const [namespace, method] = op.sdk.split(".");
     const owner = namespace === "client" ? c : c[namespace];
@@ -472,4 +472,46 @@ test("an image comes in two sizes: large for the post, small for the feed", asyn
   assert.equal(post.images[0].url, "https://img/1.jpg");
   assert.equal(post.images[0].small_url, "https://img/1_512.jpg");
   assert.equal(post.images[0].small_width, 512);
+});
+
+test("a member's posts and comments are listed, and their own are edited", async () => {
+  const post = { id: "cm_post_1", topic_id: "cm_top_2", body: "Leg day!", edited_at: "2026-11-27T10:00:00Z" };
+  const comment = { id: "cm_cmt_1", post_id: "cm_post_1", body: "Nice work", edited_at: "2026-11-27T10:01:00Z" };
+  const { fetch, calls } = fakeFetch([
+    session(),
+    json(200, { posts: [post], next_cursor: "c1", has_more: true }),
+    json(200, { comments: [{ ...comment, post: { id: "cm_post_1", topic_id: "cm_top_2", author: { external_id: "sara" }, body: "Leg day!" } }], next_cursor: null, has_more: false }),
+    json(200, post),
+    json(200, comment),
+  ]);
+  const c = new Community({ apiKey: PUBLISHABLE, baseUrl: base, fetch });
+  await c.initialize("ali");
+  calls.length = 0;
+
+  const posts = await c.posts.byMember("ali", { limit: 10, before: "c0" });
+  assert.equal(calls[0].method, "GET");
+  assert.match(calls[0].url, /\/v1\/community\/members\/ali\/posts\?limit=10&before=c0$/);
+  assert.equal(posts.posts[0].edited_at, "2026-11-27T10:00:00Z");
+  assert.equal(posts.next_cursor, "c1");
+
+  const comments = await c.comments.byMember("a/li");
+  assert.match(calls[1].url, /\/v1\/community\/members\/a%2Fli\/comments$/);
+  assert.equal(comments.comments[0].post.author.external_id, "sara");
+
+  const edited = await c.posts.update("cm_post_1", { body: "Leg day!", topicId: "cm_top_2" });
+  assert.equal(calls[2].method, "PATCH");
+  assert.match(calls[2].url, /\/v1\/posts\/cm_post_1$/);
+  assert.deepEqual(calls[2].body, { body: "Leg day!", topic_id: "cm_top_2" });
+  assert.equal(edited.edited_at, "2026-11-27T10:00:00Z");
+
+  const said = await c.comments.update("cm_cmt_1", { body: "Nice work" });
+  assert.equal(calls[3].method, "PATCH");
+  assert.match(calls[3].url, /\/v1\/comments\/cm_cmt_1$/);
+  assert.deepEqual(calls[3].body, { body: "Nice work" });
+  assert.equal(said.body, "Nice work");
+
+  // Nothing to change is caught before anything is sent.
+  assert.throws(() => c.posts.update("cm_post_1", {}), ValidationError);
+  assert.throws(() => c.comments.update("cm_cmt_1", {}), ValidationError);
+  assert.equal(calls.length, 4);
 });
