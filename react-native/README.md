@@ -21,8 +21,8 @@ at runtime, works in Expo Go, and needs no rebuild to add.
 Neither package is on the npm registry. Install both from their releases:
 
 ```sh
-npm install https://github.com/TrackCore-S93/community-sdks/releases/download/typescript-v0.1.2/trackcore-community-sdk-0.1.2.tgz
-npm install https://github.com/TrackCore-S93/community-sdks/releases/download/react-native-v0.1.2/trackcore-community-react-native-0.1.2.tgz
+npm install https://github.com/TrackCore-S93/community-sdks/releases/download/typescript-v0.1.3/trackcore-community-sdk-0.1.3.tgz
+npm install https://github.com/TrackCore-S93/community-sdks/releases/download/react-native-v0.1.3/trackcore-community-react-native-0.1.3.tgz
 ```
 
 `bun add`, `pnpm add` and `yarn add` take the same two URLs.

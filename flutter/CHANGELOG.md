@@ -1,4 +1,4 @@
-## 0.1.2
+## 0.1.3
 
 - `posts.update` and `comments.update`: a member edits their own post (text,
   topic, or both) or comment (text). `Post` and `Comment` carry `editedAt`.
