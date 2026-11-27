@@ -26,10 +26,14 @@ export interface CoachMessagesParams extends CallOptions {
   around?: string;
 }
 
-/** A voice note or a document about to be uploaded. */
+/** A voice note, a document or a video about to be uploaded. */
 export interface CoachFileParams extends CallOptions {
-  /** `"voice"` for a voice note, `"file"` for a document. */
-  kind: "voice" | "file";
+  /**
+   * `"voice"` for a voice note, `"file"` for a document, `"video"` for a
+   * video. Only the coach's side sends a video: an MP4 or a MOV file of up to
+   * 100 MB.
+   */
+  kind: "voice" | "file" | "video";
   /** The file's name, shown to the member. */
   fileName: string;
   /** The file's type: any audio type for a voice note; PDF, Word, Excel, PowerPoint, RTF, text or CSV for a document. */
@@ -195,7 +199,9 @@ export class CoachChatAPI {
   startFile(params: CoachFileParams): Promise<CoachFileUpload> {
     required("fileName", params.fileName);
     required("contentType", params.contentType);
-    if (params.kind !== "voice" && params.kind !== "file") throw new ValidationError("kind", 'kind must be "voice" or "file".');
+    if (params.kind !== "voice" && params.kind !== "file" && params.kind !== "video") {
+      throw new ValidationError("kind", 'kind must be "voice", "file" or "video".');
+    }
     return this.transport.request({
       method: "POST", path: "/v1/coach-chat/files", audience: "member", signal: params.signal,
       body: { kind: params.kind, file_name: params.fileName, content_type: params.contentType, duration_ms: params.durationMs },

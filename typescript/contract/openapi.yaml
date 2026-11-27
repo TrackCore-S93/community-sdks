@@ -3755,8 +3755,8 @@ paths:
     post:
       operationId: beginCoachFile
       tags: [Coach chat]
-      summary: "Start the upload of a voice note or a document"
-      description: "Records a voice note or a document about to be uploaded, and returns a link to send its bytes to. Send them with the method given, then call the complete route, then name the file in `file_ids` when sending a message. A voice note may be any audio type. A document must be a PDF, Word, Excel, PowerPoint, RTF, text or CSV file. A file that is never put on a message is removed after a day.\n\nThe coach's side (a member whose role is `coach` or `creator`) may always upload both kinds. Any other member may upload a kind only when the creator allows members to send it: `coach_chat_voice_enabled` for a voice note, `coach_chat_files_enabled` for a document. Otherwise the answer is `forbidden`.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
+      summary: "Start the upload of a voice note, a document or a video"
+      description: "Records a voice note or a document about to be uploaded, and returns a link to send its bytes to. Send them with the method given, then call the complete route, then name the file in `file_ids` when sending a message. A voice note may be any audio type. A document must be a PDF, Word, Excel, PowerPoint, RTF, text or CSV file. A video must be an MP4 or a MOV file (`video/mp4` or `video/quicktime`) and is stored as sent. A voice note or a document may be up to 25 MB and a video up to 100 MB; `max_bytes` in the answer says which. A file that is never put on a message is removed after a day.\n\nThe coach's side (a member whose role is `coach` or `creator`) may always upload every kind. Any other member may upload a voice note or a document only when the creator allows members to send it: `coach_chat_voice_enabled` for a voice note, `coach_chat_files_enabled` for a document. A member can never upload a video. Otherwise the answer is `forbidden`.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
       x-community-auth: member
       x-community-sdk: coachChat.startFile
       parameters:
@@ -3835,7 +3835,7 @@ paths:
     post:
       operationId: completeCoachFile
       tags: [Coach chat]
-      summary: "Finish the upload of a voice note or a document"
+      summary: "Finish the upload of a voice note, a document or a video"
       description: "Says the file has been sent to its link. The server checks it arrived and is within the limit, and marks it ready to put on a message. Safe to repeat. A file that is empty or over the limit is refused and removed: start a new upload. Only the user who started the upload can finish it.\n\n**Who may call it.** For one end user: a publishable key with a session token, or a secret key with `X-External-Id`."
       x-community-auth: member
       x-community-sdk: coachChat.completeFile
@@ -7331,7 +7331,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CoachFile'
-          description: "The voice notes and documents on it. The coach's side can always send them; a member only when the creator allows it."
+          description: "The voice notes, documents and videos on it. The coach's side can always send them; a member only voice notes and documents, and only when the creator allows it."
         is_mine:
           type: boolean
           description: "True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach."
@@ -7394,7 +7394,7 @@ components:
           example: false
     CoachFile:
       type: object
-      description: "A voice note or a document on a coaching-chat message."
+      description: "A voice note, a document or a video on a coaching-chat message."
       x-go-type: httpx.coachFileBody
       required: [id, kind, name, content_type, bytes, duration_ms, url]
       properties:
@@ -7404,8 +7404,8 @@ components:
           example: "cm_att_…"
         kind:
           type: string
-          enum: [voice, file]
-          description: "`voice` is a voice note, to play. `file` is a document, to open or save."
+          enum: [voice, file, video]
+          description: "`voice` is a voice note, to play. `file` is a document, to open or save. `video` is a video, to play; only the coach's side sends one."
           example: "voice"
         name:
           type: string
@@ -7421,7 +7421,7 @@ components:
           example: 184320
         duration_ms:
           type: [integer, 'null']
-          description: "A voice note's length in milliseconds, when the sender gave it. Null otherwise."
+          description: "A voice note's or a video's length in milliseconds, when the sender gave it. Null otherwise."
           example: 15000
         url:
           type: [string, 'null']
@@ -7438,7 +7438,7 @@ components:
           example: "cm_att_…"
         kind:
           type: string
-          enum: [voice, file]
+          enum: [voice, file, video]
           description: "What was asked for."
           example: "file"
         name:
@@ -7455,14 +7455,14 @@ components:
           example: 26214400
     BeginCoachFileRequest:
       type: object
-      description: "A voice note or a document about to be uploaded."
+      description: "A voice note, a document or a video about to be uploaded."
       x-go-type: httpx.beginCoachFileRequest
       required: [kind, file_name, content_type]
       properties:
         kind:
           type: string
-          enum: [voice, file]
-          description: "`voice` for a voice note, `file` for a document."
+          enum: [voice, file, video]
+          description: "`voice` for a voice note, `file` for a document, `video` for a video."
           example: "file"
         file_name:
           type: string
@@ -7470,11 +7470,11 @@ components:
           example: "Nutrition plan.pdf"
         content_type:
           type: string
-          description: "The file's type. Any audio type for a voice note. For a document: PDF, Word, Excel, PowerPoint, RTF, text or CSV."
+          description: "The file's type. Any audio type for a voice note. For a document: PDF, Word, Excel, PowerPoint, RTF, text or CSV. For a video: `video/mp4` or `video/quicktime`."
           example: "application/pdf"
         duration_ms:
           type: integer
-          description: "A voice note's length in milliseconds. Optional."
+          description: "A voice note's or a video's length in milliseconds. Optional."
           example: 15000
     SendAsCoachRequest:
       type: object

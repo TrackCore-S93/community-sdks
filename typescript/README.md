@@ -17,10 +17,10 @@ The package is not on the npm registry. Each release carries the built package
 as a tarball, and npm, Bun, pnpm and yarn all install it from the URL.
 
 ```sh
-npm install https://github.com/TrackCore-S93/community-sdks/releases/download/typescript-v0.1.3/trackcore-community-sdk-0.1.3.tgz
-bun add https://github.com/TrackCore-S93/community-sdks/releases/download/typescript-v0.1.3/trackcore-community-sdk-0.1.3.tgz
-pnpm add https://github.com/TrackCore-S93/community-sdks/releases/download/typescript-v0.1.3/trackcore-community-sdk-0.1.3.tgz
-yarn add https://github.com/TrackCore-S93/community-sdks/releases/download/typescript-v0.1.3/trackcore-community-sdk-0.1.3.tgz
+npm install https://github.com/TrackCore-S93/community-sdks/releases/download/typescript-v0.1.4/trackcore-community-sdk-0.1.4.tgz
+bun add https://github.com/TrackCore-S93/community-sdks/releases/download/typescript-v0.1.4/trackcore-community-sdk-0.1.4.tgz
+pnpm add https://github.com/TrackCore-S93/community-sdks/releases/download/typescript-v0.1.4/trackcore-community-sdk-0.1.4.tgz
+yarn add https://github.com/TrackCore-S93/community-sdks/releases/download/typescript-v0.1.4/trackcore-community-sdk-0.1.4.tgz
 ```
 
 ## Use

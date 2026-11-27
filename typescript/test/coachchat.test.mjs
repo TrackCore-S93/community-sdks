@@ -247,5 +247,5 @@ test("a file that is empty, too large or refused by storage never reaches a mess
   assert.equal(calls[0].body.duration_ms, 1500);
   await assert.rejects(c.coachChat.uploadFile(new Uint8Array(1), params), ConnectionError);
   assert.equal(calls.length, 3);
-  assert.throws(() => c.coachChat.startFile({ ...params, kind: "video" }), ValidationError);
+  assert.throws(() => c.coachChat.startFile({ ...params, kind: "sticker" }), ValidationError);
 });

@@ -876,7 +876,7 @@ export interface CoachMessage {
   body: string;
   /** The message's pictures. */
   images: Image[];
-  /** The voice notes and documents on it. The coach's side can always send them; a member only when the creator allows it. */
+  /** The voice notes, documents and videos on it. The coach's side can always send them; a member only voice notes and documents, and only when the creator allows it. */
   files: CoachFile[];
   /** True when the side the call acts for wrote it: the member's own messages for the member, the coach's side's for a coach. */
   is_mine: boolean;
@@ -912,19 +912,19 @@ export interface CoachMessagePage {
   has_newer: boolean;
 }
 
-/** A voice note or a document on a coaching-chat message. */
+/** A voice note, a document or a video on a coaching-chat message. */
 export interface CoachFile {
   /** The file's id. */
   id: string;
-  /** `voice` is a voice note, to play. `file` is a document, to open or save. */
-  kind: "voice" | "file";
+  /** `voice` is a voice note, to play. `file` is a document, to open or save. `video` is a video, to play; only the coach's side sends one. */
+  kind: "voice" | "file" | "video";
   /** What the sender called the file. */
   name: string;
   /** The file's type. */
   content_type: string;
   /** The file's size in bytes. Null until the upload is finished. */
   bytes: number | null;
-  /** A voice note's length in milliseconds, when the sender gave it. Null otherwise. */
+  /** A voice note's or a video's length in milliseconds, when the sender gave it. Null otherwise. */
   duration_ms: number | null;
   /** A short-lived link to the file. Null until the upload is finished. */
   url: string | null;
@@ -935,7 +935,7 @@ export interface CoachFileUpload {
   /** The file's id, used to finish the upload and to put the file on a message. */
   id: string;
   /** What was asked for. */
-  kind: "voice" | "file";
+  kind: "voice" | "file" | "video";
   /** The file's name. */
   name: string;
   /** Where and how to send the file. */
@@ -944,15 +944,15 @@ export interface CoachFileUpload {
   max_bytes: number;
 }
 
-/** A voice note or a document about to be uploaded. */
+/** A voice note, a document or a video about to be uploaded. */
 export interface BeginCoachFileRequest {
-  /** `voice` for a voice note, `file` for a document. */
-  kind: "voice" | "file";
+  /** `voice` for a voice note, `file` for a document, `video` for a video. */
+  kind: "voice" | "file" | "video";
   /** The file's name, shown to the member. */
   file_name: string;
-  /** The file's type. Any audio type for a voice note. For a document: PDF, Word, Excel, PowerPoint, RTF, text or CSV. */
+  /** The file's type. Any audio type for a voice note. For a document: PDF, Word, Excel, PowerPoint, RTF, text or CSV. For a video: `video/mp4` or `video/quicktime`. */
   content_type: string;
-  /** A voice note's length in milliseconds. Optional. */
+  /** A voice note's or a video's length in milliseconds. Optional. */
   duration_ms?: number;
 }
 
